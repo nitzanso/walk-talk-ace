@@ -32,7 +32,7 @@ export function clean(json, text) {
   const out = {
     headline: safe(json.headline) ? json.headline : '',
     process: safe(json.process) ? json.process : '',
-    heard: safe(json.heard) ? json.heard : '',
+    heard: typeof json.heard === 'string' ? json.heard : '', // a retelling may quote their own words (e.g. "I don't accept it")
     underneath: safe(json.underneath) ? json.underneath : '',
     holding: safe(json.holding) ? json.holding : '',
     newThing: safe(json.newThing) ? json.newThing : '',
