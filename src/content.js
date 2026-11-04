@@ -4,12 +4,12 @@ export const MESSAGES = {
   direct: {
     good: "Good to see you here. Notice what's working today. It's worth keeping.",
     soso: "So-so is a real answer. You don't have to fix it today. A small step is enough.",
-    hard: "It's okay to feel this way today. It's real, and it isn't permanent: feelings change, even the heavy ones. You've already gotten through hard things, and you're showing up now. Your next step can be a small one.",
+    hard: "It's okay to feel this way today. It's real, and it makes sense. You don't have to do anything with it right now. If you'd like company or one small thing, I'm here.",
   },
   warm: {
     good: "I'm glad today feels good. Let it be good. You can carry a little of it into tomorrow.",
     soso: "A so-so day is allowed. You don't owe anyone more than what you have today. One small thing is plenty.",
-    hard: "I'm so glad you're here. Today is heavy, and that makes sense. It won't stay this heavy. You've come through hard things before, and you can take this one gently, one small step at a time.",
+    hard: "I'm so glad you're here. Today is heavy, and that makes sense. Nothing has to be fixed right now. We can just be with it, or find one small gentle thing, whichever you'd like.",
   },
 };
 
@@ -74,39 +74,88 @@ export const LIGHTS = [
 
 export const TOOLS = [
   {
-    id: 'know-guess',
-    title: 'Know versus guess',
-    why: "The guesses are what keep you up at night. Hearing them next to the facts shows you which is which.",
+    id: 'kind-company', title: 'Keep yourself company for a minute', for: ['heavy', 'empty'], low: true,
+    why: 'When something hurts, being gentle with yourself can matter more than fixing it. This is for the moments you just need to be with it, with no goal.',
+    steps: ['Rest a hand on your chest or your belly.', 'Say, quietly: "This hurts, and it makes sense that it hurts."', 'Stay as long as you like. Stopping is fine too.'],
+    example: '"It hurts because it mattered. I\'m allowed to hurt."',
+  },
+  {
+    id: 'belly-breath', title: 'Slow breath into the belly', for: ['heavy', 'urge', 'anger', 'body'], low: true,
+    why: 'A slow breath out tells the body it can come down a little. It does not fix anything; it gives you a bit of room.',
+    steps: ['One hand on your chest, one on your belly.', 'Breathe in so the belly rises like a balloon. Breathe out a little longer.', 'Go for about two minutes, or as long as feels okay.'],
+    example: 'In for 4, out for 6. If counting is annoying, just make the out-breath longer.',
+  },
+  {
+    id: 'senses-walk', title: 'Walk and notice', for: ['thoughts', 'empty', 'body', 'heavy'], low: true,
+    why: 'Walking and noticing what is around you gives a spinning mind something else to hold for a while. You don\'t need to feel better first.',
+    steps: ['Walk for a few minutes, slower than usual if you like.', 'Notice three things you can see, then two you can hear.'],
+    example: '"A cat on the wall, a car door, wind in the palms. And my own steps."',
+  },
+  {
+    id: 'name-feeling', title: 'Find the right word for it', for: ['heavy', 'thoughts', 'anger'], low: true,
+    why: 'Putting a precise word on a feeling can take some of the charge out of it. The right word is the one that fits, not the nicest one.',
+    steps: ['Say: "Right now I feel ___."', 'If it does not fit, try another word until one feels right.'],
+    example: '"Right now I feel lonely, and a little scared, and tired."',
+  },
+  {
+    id: 'know-guess', title: 'What I know and what I\'m guessing', for: ['thoughts'], low: false,
+    why: 'The guesses are what keep you up at night. Hearing them next to the facts shows you which is which.',
     steps: ['Say one thing you actually know.', 'Say one thing you are guessing.'],
     example: 'Know: "He hasn\'t written, and he told me he made up his mind." Guess: "He\'s avoiding me because he can\'t face it."',
   },
   {
-    id: 'angry-sentence',
-    title: 'One angry sentence, unsoftened',
-    why: 'Anger with nowhere to go tends to come out as sadness or self-blame. Saying it once, out loud, gives it somewhere to go.',
-    steps: ['Finish: "I felt ___ when ___, and I needed ___."', 'Say it without softening. You are not sending it.'],
+    id: 'evidence', title: 'Is the whole picture true?', for: ['thoughts'], low: false,
+    why: 'A painful thought often holds one piece of the truth and leaves the rest out. Adding the rest back is not arguing with your pain.',
+    steps: ['Say the painful thought.', 'Finish: "That\'s not the whole picture, because ..."', 'Use real things that happened, as vividly as you can.'],
+    example: '"It\'s all my fault." → "That\'s not the whole picture, because we both made choices, and I tried for a long time."',
+  },
+  {
+    id: 'worst-best-likely', title: 'Worst, best, most likely, then a kind plan', for: ['thoughts'], low: false,
+    why: 'Worry keeps its force by staying vague. Saying the whole chain out loud, then the likely version, then one gentle plan, makes it smaller.',
+    steps: ['Say the worst case, all the way to the end.', 'Say the best case, as vividly as the worst.', 'Say what will most likely happen, including that you will feel sad.', 'Choose one kind thing to do if that happens.'],
+    example: 'Worry: "the day we stop talking." Likely: "I\'ll feel sad and want to write him." Plan: "I\'ll walk for ten minutes and then call a friend."',
+  },
+  {
+    id: 'if-then', title: 'When the pull comes, one small thing first', for: ['urge'], low: true,
+    why: 'An urge is a wave. You don\'t have to fight it or be perfect about it, only put one small thing in front of it.',
+    steps: ['Name the pull: "I want to ___."', 'Say it\'s allowed to be there. Whatever you choose is yours.', 'Before you decide, do one small thing for ten minutes.'],
+    example: '"I want to text him. I\'ll water the plants and drink a glass of water first, then I\'ll see how I feel."',
+  },
+  {
+    id: 'company-near', title: 'Be near people, no talking needed', for: ['empty', 'heavy'], low: true,
+    why: 'Sometimes the lonely part is the silence, not the lack of conversation. Being around others can ease it without asking anything of you.',
+    steps: ['Pick a place where people are: a cafe, a park bench, a friend\'s kitchen.', 'Stay as long as is comfortable. You don\'t need to explain anything.'],
+    example: '"I\'ll take my book to the cafe and sit by the window for half an hour."',
+  },
+  {
+    id: 'remember-through', title: 'Remember something you\'ve already come through', for: ['heavy', 'empty', 'thoughts'], low: false,
+    why: 'Remembering how you got through something hard shows you what you have inside, without saying today is easy.',
+    steps: ['Pick one hard thing you got through. Open one of your aces if you like.', 'Say one thing that helped you then.'],
+    example: '"When I moved alone, it helped to call my sister every evening."',
+  },
+  {
+    id: 'feel-break', title: 'Time for the feeling, and time to rest', for: ['heavy', 'thoughts', 'empty'], low: true,
+    why: 'Feeling the loss and stepping away from it both belong to grief. You can move between them as you need.',
+    steps: ['Give the feeling a few minutes, fully, if you want to.', 'Then choose one thing that is gentle or enjoyable, with no guilt.'],
+    example: '"Ten minutes on the balcony with it. Then music and a shower."',
+  },
+  {
+    id: 'one-good', title: 'One small good thing', for: ['empty', 'heavy'], low: true,
+    why: 'When things are hard, small good things are easy to miss. This is not about the pain going away; it is about noticing the gentle things too. It can be tiny.',
+    steps: ['Think of one small thing today that was okay or kind.', 'Say why, in one sentence.'],
+    example: '"The coffee was warm, and the sun reached the table."',
+  },
+  {
+    id: 'angry-sentence', title: 'Let the anger speak (not to send)', for: ['anger'], low: true,
+    why: 'Anger with nowhere to go often turns into sadness or blame of yourself. Saying it once gives it somewhere to go. It\'s allowed.',
+    steps: ['Finish: "I felt ___ when ___, and I needed ___."', 'Say it without softening. You\'re not sending it.'],
     example: '"I felt unheard when I said no and it kept coming back, and I needed that no to be taken seriously the first time."',
   },
   {
-    id: 'wording',
-    title: 'Another way to say it',
-    why: '"You made me feel…" is fine to say. A second version separates what happened from how it landed on you, which gives you something you can use next time.',
+    id: 'wording', title: 'Another way to say it', for: ['anger', 'thoughts'], low: false,
+    why: 'A second version separates what happened from how it landed on you, which gives you something you can use next time.',
     steps: ['Notice a line like "you made me feel ___".', 'Try: "I felt ___ when ___, and I needed ___."'],
     example: '"You made me feel helpless" → "I felt helpless when I couldn\'t see a way forward, and I needed to know we\'d work it out."',
-  },
-  {
-    id: 'if-then',
-    title: 'If this happens, then I will',
-    why: 'Deciding in advance what you will do makes it easier on a day when you have no energy to decide. A 2-minute version counts.',
-    steps: ['Pick a moment that pulls you in.', 'Pick one small thing to do instead.'],
-    example: '"If I start replaying the conversation, I\'ll walk to the window and breathe three times."',
-  },
-  {
-    id: 'feel-break',
-    title: 'Feel-it time, then break time',
-    why: 'Facing a feeling and stepping away from it both help. Giving each a time keeps the hard feelings from taking over the whole day.',
-    steps: ['Give the feeling 10 minutes, fully.', 'Then plan one break you will enjoy.'],
-    example: '"Ten minutes on the balcony with the hard stuff. Then music and a shower."',
   },
 ];
 

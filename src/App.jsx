@@ -6,6 +6,7 @@ import Onboarding from './Onboarding.jsx';
 import Today from './Today.jsx';
 import Archive, { Aces } from './Archive.jsx';
 import Library from './Library.jsx';
+import Picker from './Picker.jsx';
 import More from './More.jsx';
 import Talk from './Talk.jsx';
 import Type from './Type.jsx';
@@ -51,6 +52,7 @@ function Shell() {
             <Overlay key={ov.name}>
               {ov.name === 'talk' && <Talk onDone={close} onReflect={reflect} onCrisis={crisis} />}
               {ov.name === 'type' && <Type onDone={close} onReflect={reflect} onCrisis={crisis} />}
+              {ov.name === 'picker' && <Picker onClose={close} open={open} />}
               {ov.name === 'breathe' && <Breathe onClose={close} />}
               {ov.name === 'ace' && <AceFlow onClose={close} />}
               {ov.name === 'aces' && <AcesList onClose={close} open={open} />}

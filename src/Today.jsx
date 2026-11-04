@@ -62,6 +62,7 @@ export default function Today({ open }) {
   const hi = hour < 12 ? t('Good morning') : hour < 18 ? t('Hello') : t('Good evening');
 
   const options = [
+    ['picker', 'sun', t('Help me find one thing'), t('Tell me where you are, I offer one small thing')],
     ['talk', 'mic', t('Talk'), t('Say it out loud, walking or not')],
     ['type', 'pen', t('Type'), t('Write a few lines')],
     ['lights', 'sun', t('A little light'), t('A short, researched idea')],
@@ -103,7 +104,7 @@ export default function Today({ open }) {
             <motion.button key={id} className="chip" whileTap={{ scale: 0.98 }} onClick={() => open(id === 'lights' ? 'library' : id)} style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'start', background: i === 0 ? 'var(--butter)' : 'var(--card)', minHeight: 64 }}>
               <Icon n={ic} />
               <span style={{ flex: 1 }}>{name}<br /><span className="small" style={{ fontWeight: 400 }}>{sub}</span></span>
-              {i === 0 && <span className="tag" style={{ background: '#fff' }}>{t('Try this one')}</span>}
+              
             </motion.button>
           ))}
         </div>
