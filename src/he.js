@@ -322,6 +322,14 @@ const HE = {
   "What's new": "מה חדש",
   "Gentler tools, and a new button below: “Help me find one thing”. It asks where you are and offers just one small thing.": "כלים עדינים יותר, וכפתור חדש למטה: ״עזרו לי למצוא דבר אחד״. הוא שואל איפה אתם ומציע רק דבר קטן אחד.",
   "Got it": "הבנתי",
+  "Lighter": "קל יותר",
+  "Okay": "בסדר",
+  "Heavy": "כבד",
+  "Recent days": "ימים אחרונים",
+  "Say what's on your mind.": "ספרו מה עובר עליכם.",
+  "A minute is plenty. It does not have to be organized.": "דקה מספיקה. לא חייבים שזה יהיה מסודר.",
+  "How heavy is today?": "כמה כבד היום?",
+  "Not ready to talk? Help me find one thing": "לא מוכנים לדבר? עזרו לי למצוא דבר אחד",
   "No text was saved for this one.": "לא נשמר טקסט להקלטה הזו.",
 };
 export default HE;

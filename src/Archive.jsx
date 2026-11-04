@@ -9,31 +9,32 @@ const when = (ts, lang) => new Date(ts).toLocaleDateString(lang, { day: 'numeric
 
 function Timeline({ open }) {
   const { t, he, lang } = useI18n();
-  const MOODN = { good: t('Good'), soso: t('So-so'), hard: t('Hard') };
+  const MOODN = { good: t('Lighter'), soso: t('Okay'), hard: t('Heavy') };
   const data = useQuery(async () => {
     const [c, e, r, a] = await Promise.all([db.checks.toArray(), db.entries.toArray(), db.reflections.toArray(), db.aces.toArray()]);
     return [
-      ...c.map((x) => ({ t: x.created, k: 'check', title: t('Today felt {m}', { m: MOODN[x.mood] || x.mood }), mood: x.mood })),
-      ...e.map((x) => ({ t: x.created, k: 'entry', id: x.id, hasText: true, title: (he && x.titleHe) || x.title || (x.kind === 'breathe' ? t('Breathing, 90 seconds') : x.kind === 'talk' ? t('Walk and talk') + (x.seconds ? ', ' + Math.round(x.seconds / 60 * 10) / 10 + ' ' + t('min') : '') : x.kind === 'type' ? t('Wrote something') : t('Entry')), sub: x.text })),
-      ...r.map((x) => ({ t: x.created, k: 'refl', title: x.sample ? t('Reflection (sample)') : t('Reflection'), sub: x.reflection && x.reflection.process, fb: x.feedback })),
+      ...c.map((x) => ({ t: x.created, k: 'check', mood: x.mood })),
+      ...e.map((x) => ({ t: x.created, k: 'entry', id: x.id, title: (he && x.titleHe) || x.title || (x.kind === 'breathe' ? t('Breathing, 90 seconds') : x.kind === 'talk' ? t('Walk and talk') : x.kind === 'type' ? t('Wrote something') : t('Entry')), open: true })),
+      ...r.map((x) => ({ t: x.created, k: 'refl', title: x.sample ? t('Reflection (sample)') : t('Reflection'), sub: x.reflection && x.reflection.process })),
       ...a.map((x) => ({ t: x.created, k: 'ace', title: x.kind === 'small' ? t('Small ace') : t('Big ace'), sub: x.text })),
     ].sort((p, q) => q.t - p.t);
   }, [lang], []);
-  if (!data.length) return <div className="card"><p>{t('Nothing here yet. Everything you do shows up here, newest first.')}</p></div>;
+  if (!data.length) return <p className="lead">{t('Nothing here yet. Everything you do shows up here, newest first.')}</p>;
+  const days = []; data.forEach((x) => { const k = dayKey(x.t); let d = days.find((y) => y.k === k); if (!d) { d = { k, t: x.t, items: [] }; days.push(d); } d.items.push(x); });
+  const hm = (ts) => new Date(ts).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {data.map((x, i) => (
-        <div key={i} className="tl-item" role={x.hasText ? 'button' : undefined} tabIndex={x.hasText ? 0 : undefined} onClick={x.hasText ? () => open('entry', { id: x.id }) : undefined} onKeyDown={x.hasText ? (e) => { if (e.key === 'Enter') open('entry', { id: x.id }); } : undefined} style={x.hasText ? { cursor: 'pointer' } : undefined}>
-          {x.mood ? <Blob mood={x.mood} size={40} /> : <Icon n={x.k === 'ace' ? 'sun' : x.k === 'refl' ? 'book' : 'path'} />}
-          <div style={{ minWidth: 0 }}>
-            <div className="small">{when(x.t, lang)}</div>
-            <div style={{ fontWeight: 500 }}>{x.title}</div>
-            {x.sub && !x.hasText && <div className="small" dir="auto" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{x.sub}</div>}
-            {x.fb && <div className="small">{t('You said:')} {x.fb === 'true' ? t('True').toLowerCase() : x.fb === 'notquite' ? t('Not quite').toLowerCase() : t('Missed it').toLowerCase()}</div>}
-          </div>
-          {x.hasText && <span style={{ marginInlineStart: 'auto', opacity: 0.5, transform: 'rotate(-90deg)' }} className="rtlflip"><Icon n="chev" size={18} /></span>}
-        </div>
-      ))}
+    <div className="tline">
+      {days.map((d) => { const chk = d.items.find((x) => x.k === 'check'); const rows = d.items.filter((x) => x.k !== 'check'); return (
+        <section key={d.k}>
+          <header>{chk ? <Blob mood={chk.mood} size={28} /> : <span className="dot" />}<b>{new Date(d.t).toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' })}</b>{chk && <span className="small">{MOODN[chk.mood]}</span>}</header>
+          {rows.map((x, i) => (
+            <div key={i} className={'trow' + (x.open ? ' tap' : '')} role={x.open ? 'button' : undefined} tabIndex={x.open ? 0 : undefined} onClick={x.open ? () => open('entry', { id: x.id }) : undefined} onKeyDown={x.open ? (e) => { if (e.key === 'Enter') open('entry', { id: x.id }); } : undefined}>
+              <span className="small tm">{hm(x.t)}</span>
+              <span className="tt" dir="auto">{x.title}{x.sub && <span className="small ts" dir="auto">{x.sub}</span>}</span>
+            </div>
+          ))}
+        </section>
+      ); })}
     </div>
   );
 }
@@ -120,17 +121,17 @@ function Patterns({ open }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div className="card">
-        <h3>{t('Last 14 days')}</h3>
+        <h3>{t('Recent days')}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 8 }}>
-          {days.map((d) => { const m = byDay[dayKey(d)]; return (
+          {days.filter((d) => byDay[dayKey(d)] || showed.has(dayKey(d))).map((d) => { const m = byDay[dayKey(d)]; return (
             <div className="day" key={d.toISOString()}>{m ? <Blob mood={m} size={34} /> : <div className="ring" style={{ borderStyle: showed.has(dayKey(d)) ? 'solid' : 'dashed', background: showed.has(dayKey(d)) ? '#fff' : 'transparent' }} />}{d.getDate()}</div>
           ); })}
         </div>
-        <p className="small">{t("A blank day isn't a failure. A faint ring means you did something but didn't check in.")}</p>
+        
       </div>
       <div className="card">
         <h3>{t('How days have felt')}</h3>
-        <p>{checks.length ? `${t('Good')} ${tally.good} · ${t('So-so')} ${tally.soso} · ${t('Hard')} ${tally.hard}` : t('Check in a few days and a pattern starts to show.')}</p>
+        <p>{checks.length ? `${t('Lighter')} ${tally.good} · ${t('Okay')} ${tally.soso} · ${t('Heavy')} ${tally.hard}` : t('Check in a few days and a pattern starts to show.')}</p>
         <p className="small">{t('Days you showed up: {n}. Never a streak, nothing resets.', { n: showed.size })}</p>
       </div>
       <ThemeMap open={open} />

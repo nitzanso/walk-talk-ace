@@ -68,7 +68,7 @@ function Shell() {
           <button key={tb[0]} className={'tab' + (tab === tb[0] && !ov ? ' on' : '')} onClick={() => open(tb[0])} aria-current={tab === tb[0] ? 'page' : undefined}>
             <Icon n={tb[2]} size={24} />{t(tb[1])}<span className="ind" />
           </button>
-        ) : (
+        ) : tab === 'today' ? <div key="rec" /> : (
           <div key="rec" style={{ position: 'relative' }}>
             <button className="fab" onClick={() => open('talk')} aria-label={t('Talk')}><Icon n="mic" size={34} color="#fff" /></button>
             <span className="fablabel">{t('Talk')}</span>

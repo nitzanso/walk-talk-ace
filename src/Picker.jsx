@@ -19,14 +19,19 @@ export default function Picker({ onClose, open }) {
   const [topic, setTopic] = useState(null);
   const [low, setLow] = useState(null);
   const [n, setN] = useState(0);
+  const [order, setOrder] = useState([]);
   const fbs = useQuery(() => db.settings.where('key').startsWith('fb:tool:').toArray(), [], []);
   const uses = useQuery(() => db.settings.where('key').startsWith('use:').toArray(), [], []);
   const val = (id) => (fbs.find((f) => f.key === 'fb:tool:' + id) || {}).value;
   const lastUsed = (id) => Math.max(0, ...uses.filter((u) => u.value && u.value.tool === id).map((u) => u.value.at));
 
-  const ranked = topic && low !== null ? TOOLS
-    .filter((x) => x.for.includes(topic) && (!low || x.low) && val(x.id) !== 'no')
-    .sort((a, b) => ((val(b.id) === 'helped') - (val(a.id) === 'helped')) || (lastUsed(a.id) - lastUsed(b.id))) : [];
+  const choose = (isLow) => {
+    const r = TOOLS
+      .filter((x) => x.for.includes(topic) && (!isLow || x.low) && val(x.id) !== 'no')
+      .sort((a, b) => ((val(b.id) === 'helped') - (val(a.id) === 'helped')) || (lastUsed(a.id) - lastUsed(b.id)));
+    setOrder(r.map((x) => x.id)); setLow(isLow); setN(0);
+  };
+  const ranked = order.map((id) => TOOLS.find((x) => x.id === id)).filter(Boolean);
   const tool = ranked[n];
   const shown = React.useRef(null);
   React.useEffect(() => {
@@ -54,8 +59,8 @@ export default function Picker({ onClose, open }) {
         <>
           <p>{t('How much energy do you have right now?')}</p>
           <div className="chips">
-            <button className="chip" style={{ minHeight: 56, textAlign: 'start' }} onClick={() => setLow(true)}>{t('Very little')}</button>
-            <button className="chip" style={{ minHeight: 56, textAlign: 'start' }} onClick={() => setLow(false)}>{t('Some')}</button>
+            <button className="chip" style={{ minHeight: 56, textAlign: 'start' }} onClick={() => choose(true)}>{t('Very little')}</button>
+            <button className="chip" style={{ minHeight: 56, textAlign: 'start' }} onClick={() => choose(false)}>{t('Some')}</button>
           </div>
         </>
       )}
@@ -87,7 +92,7 @@ export default function Picker({ onClose, open }) {
       )}
 
       <div className="grow" />
-      {topic && <button className="link" onClick={() => { setTopic(null); setLow(null); setN(0); }}>{t('Start over')}</button>}
+      {topic && <button className="link" onClick={() => { setTopic(null); setLow(null); setN(0); setOrder([]); shown.current = null; }}>{t('Start over')}</button>}
       <button className="btn" onClick={onClose}>{t('Back')}</button>
     </div>
   );
