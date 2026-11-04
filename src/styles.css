@@ -162,3 +162,11 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px soli
 .hl{display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.7);border-radius:22px;padding:18px 20px}
 .bigmic{width:140px;height:140px;margin-bottom:14px}
 .hero{gap:8px}
+
+.rprose{display:flex;flex-direction:column;gap:12px}
+.rkeep{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.55)}
+.qlink{background:none;border:0;padding:2px 0;text-align:start;font-style:italic;color:var(--ink2,#5b5c85);cursor:pointer;font-family:inherit;font-size:14px;line-height:1.4;min-height:32px}
+.qlink:disabled{cursor:default}
+.qgo{font-style:normal;text-decoration:underline;opacity:.75}
+mark.qmark{background:#F9DE8E;color:inherit;border-radius:4px;padding:1px 2px}
+.qlink.tap{text-decoration:underline;text-decoration-color:rgba(37,38,74,.3);text-underline-offset:3px}

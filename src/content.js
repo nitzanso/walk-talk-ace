@@ -196,11 +196,7 @@ export const ALLOWED_EXAMPLES = ['Smoking a few cigarettes', 'Comfort food', 'St
 export const CRISIS_RE = /(kill myself|end my life|end it all|suicid|want to die|don't want to be alive|do not want to be alive|להתאבד|התאבדות|לא רוצה לחיות|רוצה למות|לסיים את החיים)/i;
 
 export const SAMPLE_REFLECTION = {
-  headline: 'You are looking at what happened from more than one side, and it hurts.',
-  process: 'You start with questions and circle for a while. The clearer sentences come near the end.',
-  heard: 'You started by asking questions about what happened. You went back over it a few times, looking at it from his side and from yours. Near the end you said you did it, and that you are scared of the day it gets real.',
-  underneath: 'It sounds like part of you wants to be fair to both of you, and another part is afraid of the hardest day. Maybe what matters most right now is feeling safe enough to be honest without losing yourself.',
-  holding: 'You are carrying a lot of uncertainty at once. And you are already doing something hard: naming your own part without turning it against yourself.',
+  reflection: 'You look at what happened from more than one side, and being fair to both of you costs you. Maybe the fairness is also how you keep yourself from falling apart: while you are being fair, you are still in charge of the story.',
   feelings: [
     { name: 'Longing', quote: 'we still do', pleasant: false, energy: 'low' },
     { name: 'Fear', quote: 'scared of the day', pleasant: false, energy: 'high' },
@@ -208,7 +204,6 @@ export const SAMPLE_REFLECTION = {
   ],
   traps: [{ id: 'catastrophe', quote: 'scared of the day', why: 'The mind jumps ahead to the hardest day and treats it as certain.' }],
   strengths: [{ id: 'honesty', quote: 'I did it', how: 'You say plainly what is true for you, including your own part.' }],
-  newThing: 'This is the first time you named your own part.',
   steadying: { quote: 'I did it' },
-  tool: 'worst-best-likely',
+
 };

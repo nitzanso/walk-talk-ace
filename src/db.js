@@ -104,3 +104,12 @@ export async function importPack(pack) {
   if (pack.packId) await setSetting('importedPacks', [...done, pack.packId]);
   return { added: n };
 }
+
+const normQ = (s) => String(s || '').toLowerCase().replace(/[\s"'“”‘’.,!?;:()\-־]+/g, ' ').trim();
+// Finds the saved recording that contains a quote, so a quote can lead back to what was said that day.
+export async function findEntryForQuote(q) {
+  const n = normQ(q); if (n.length < 3) return null;
+  const all = await db.entries.toArray();
+  const hit = all.filter((e) => e.text && normQ(e.text).includes(n)).sort((a, b) => b.created - a.created)[0];
+  return hit ? hit.id : null;
+}

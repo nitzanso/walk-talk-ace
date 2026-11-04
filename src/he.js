@@ -384,5 +384,17 @@ const HE = {
   "Delete this recording and its reflection? This cannot be undone.": "למחוק את ההקלטה ואת ההתבוננות שלה? אי אפשר לבטל.",
   "Keep it": "להשאיר",
   "Delete": "מחיקה",
+  "What did I feel?": "מה הרגשתי?",
+  "What stood out?": "מה בלט?",
+  "What lit me up?": "מה האיר אותי?",
+  "Is there one small thing?": "יש דבר קטן אחד?",
+  "A sentence of yours to keep": "משפט שלך לשמור",
+  "where I said it": "איפה אמרתי את זה",
+  "See where I said this": "לראות איפה אמרתי את זה",
+  "A strength": "חוזקה",
+  "A pattern I noticed": "דפוס שהבחנתי בו",
+  "A habit of thinking, not a flaw. Sadness and anger are never traps.": "הרגל חשיבה, לא פגם. עצב וכעס הם אף פעם לא מלכודות.",
+  "Because you said:": "כי אמרת:",
+  "Not for me": "לא בשבילי",
 };
 export default HE;

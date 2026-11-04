@@ -57,7 +57,7 @@ function Shell() {
               {ov.name === 'ace' && <AceFlow onClose={close} />}
               {ov.name === 'aces' && <AcesList onClose={close} open={open} />}
               {ov.name === 'reflect' && <Reflection text={ov.text} onClose={close} />}
-              {ov.name === 'entry' && <EntryDetail id={ov.id} onClose={close} open={open} />}
+              {ov.name === 'entry' && <EntryDetail id={ov.id} quote={ov.quote} onClose={close} open={open} />}
               {ov.name === 'support' && <Support urgent={ov.urgent} onClose={close} />}
             </Overlay>
           )}

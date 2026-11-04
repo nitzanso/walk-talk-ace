@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Blob, { AceCard } from './Blob.jsx';
-import { db, useQuery } from './db.js';
+import { db, useQuery, findEntryForQuote } from './db.js';
+import { Quote } from './ReflectionView.jsx';
 import { useI18n } from './i18n.jsx';
 import { motion } from 'motion/react';
 import { Seg, Icon } from './ui.jsx';
@@ -41,7 +42,8 @@ function Timeline({ open }) {
   );
 }
 
-function Me() {
+function Me({ open }) {
+  const goQuote = async (q) => { const id = await findEntryForQuote(q); if (id) open('entry', { id, quote: q }); };
   const { t, he, C } = useI18n();
   const [opened, setOpened] = useState(false);
   const [view, setView] = useState(null);
@@ -83,24 +85,24 @@ function Me() {
 
   const Back = () => <button className="link" style={{ alignSelf: 'flex-start' }} onClick={() => setView(null)}>← {t('Back')}</button>;
   const Item = ({ r }) => (
-    <div className="mitem"><p dir="auto">{txt(r)}</p>{r.quote && <p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{r.quote}”</p>}<button className="link small" onClick={() => db.insights.delete(r.id)}>{t('Not me')}</button></div>
+    <div className="mitem"><p dir="auto">{txt(r)}</p>{r.quote && <Quote q={r.quote} onQuote={goQuote} />}<button className="link small" onClick={() => db.insights.delete(r.id)}>{t('Not me')}</button></div>
   );
   const Page = ({ title, intro, children }) => <motion.div className="mpage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Back /><h2>{title}</h2>{intro && <p className="small">{intro}</p>}{children}</motion.div>;
   const MeRow = ({ title, count, onClick, sub }) => <button className="lrow big" onClick={onClick}><span>{title}{sub && <span className="small" style={{ display: 'block', fontFamily: 'var(--body)' }}>{sub}</span>}</span><span className="small">{count}</span></button>;
 
   if (view === 'strengths') return (
     <Page title={t('What you are good at')} intro={t('Strengths are things that feel like you and give you energy. This is a way of seeing yourself, not a test.')}>
-      {strengthsR.map(([id, hits]) => (<div className="mitem" key={id}><b style={{ fontWeight: 500 }}>{nm(STRENGTHS[id], he)} <span className="small">· {hits.length}×</span></b><p>{nm(STRENGTHS[id].what, he)}</p><p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{hits[hits.length - 1].quote}”</p><p className="small">{t('The other side:')} {nm(STRENGTHS[id].shadow, he)}</p></div>))}
+      {strengthsR.map(([id, hits]) => (<div className="mitem" key={id}><b style={{ fontWeight: 500 }}>{nm(STRENGTHS[id], he)} <span className="small">· {hits.length}×</span></b><p>{nm(STRENGTHS[id].what, he)}</p><Quote q={hits[hits.length - 1].quote} onQuote={goQuote} /><p className="small">{t('The other side:')} {nm(STRENGTHS[id].shadow, he)}</p></div>))}
       {strengthI.map((r) => <Item key={r.id} r={r} />)}
     </Page>);
   if (view === 'traps') return (
     <Page title={t('What tends to come up')} intro={t('Habits of thinking and recurring themes, so you can meet them gently. Not flaws.')}>
-      {trapsR.map(([id, hits]) => (<div className="mitem" key={id}><b style={{ fontWeight: 500 }}>{nm(TRAPS[id], he)} <span className="small">· {hits.length}×</span></b><p>{nm(TRAPS[id].what, he)}</p><p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{hits[hits.length - 1].quote}”</p><p><b style={{ fontWeight: 500 }}>{t('To try:')}</b> {nm(TRAPS[id].tryIt, he)}</p></div>))}
+      {trapsR.map(([id, hits]) => (<div className="mitem" key={id}><b style={{ fontWeight: 500 }}>{nm(TRAPS[id], he)} <span className="small">· {hits.length}×</span></b><p>{nm(TRAPS[id].what, he)}</p><Quote q={hits[hits.length - 1].quote} onQuote={goQuote} /></div>))}
       {themes.map((th) => <div className="mitem" key={th.id}><b style={{ fontWeight: 500 }}>{he && th.he ? th.he : th.en}</b>{(th.desc || th.descHe) && <p className="small" dir="auto">{he && th.descHe ? th.descHe : th.desc}</p>}<button className="link small" onClick={() => db.insights.delete(th.id)}>{t('Not me')}</button></div>)}
     </Page>);
   if (view === 'feelings') return (
     <Page title={t('Feelings')} intro={t('The feelings you named, and what happened to them. Feelings move.')}>
-      {feelR.map(([name, hits]) => (<div className="mitem" key={name}><b style={{ fontWeight: 500 }}>{name} <span className="small">· {hits.length}×</span></b><p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{hits[hits.length - 1].quote}”</p>{passed[name] && <p className="small">{t('Later you said it was')}: {passed[name].map((v) => PASS[v] || v).join(', ')}</p>}</div>))}
+      {feelR.map(([name, hits]) => (<div className="mitem" key={name}><b style={{ fontWeight: 500 }}>{name} <span className="small">· {hits.length}×</span></b><Quote q={hits[hits.length - 1].quote} onQuote={goQuote} />{passed[name] && <p className="small">{t('Later you said it was')}: {passed[name].map((v) => PASS[v] || v).join(', ')}</p>}</div>))}
     </Page>);
   if (view === 'helps') return (
     <Page title={t('What helps you')}>
@@ -193,7 +195,7 @@ export default function Archive({ open }) {
       <Seg value={seg} onChange={setSeg} items={[['time', t('Timeline')], ['me', t('Me')], ['aces', t('Pocket')]]} />
       {seg === 'time' && <Timeline open={open} />}
       {seg === 'aces' && <Pocket open={open} />}
-      {seg === 'me' && <Me />}
+      {seg === 'me' && <Me open={open} />}
       <div style={{ height: 8 }} />
     </div>
   );

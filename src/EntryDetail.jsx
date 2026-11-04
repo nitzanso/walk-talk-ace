@@ -4,11 +4,25 @@ import { Icon, Seg, Helpful } from './ui.jsx';
 import { useI18n } from './i18n.jsx';
 import ReflectionView from './ReflectionView.jsx';
 
-export default function EntryDetail({ id, onClose, open }) {
+// Shows the text with one quoted sentence marked. The quote was saved with punctuation and case ignored, so the match ignores them too.
+function Marked({ text, q, refEl }) {
+  if (!q) return text;
+  const words = q.trim().split(/[\s"'“”‘’.,!?;:()\-־]+/).filter(Boolean).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  if (!words.length) return text;
+  const m = new RegExp(words.join('[\\s"\'“”‘’.,!?;:()\\-־]+'), 'i').exec(text);
+  if (!m) return text;
+  return <>{text.slice(0, m.index)}<mark ref={refEl} className="qmark">{m[0]}</mark>{text.slice(m.index + m[0].length)}</>;
+}
+
+export default function EntryDetail({ id, onClose, open, quote }) {
   const { t, he, lang } = useI18n();
   const e = useQuery(() => db.entries.get(id), [id], null);
   const themes = useQuery(() => db.insights.where('kind').equals('theme').toArray(), [], []);
-  const [tab, setTab] = useState('words');
+  const [tab, setTab] = useState(quote ? 'words' : 'refl');
+  const [hl, setHl] = useState(quote || '');
+  const markRef = React.useRef(null);
+  React.useEffect(() => { if (tab === 'words' && hl && markRef.current) markRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, [tab, hl, e]);
+  const goQuote = (q) => { setHl(q); setTab('words'); };
   const [sure, setSure] = useState(false);
   const erase = async () => { const txt = (await db.entries.get(id) || {}).text; await db.entries.delete(id); if (txt) { const rs = await db.reflections.toArray(); await Promise.all(rs.filter((x) => x.text === txt).map((x) => db.reflections.delete(x.id))); } onClose(); };
   if (!e) return <div className="screen" />;
@@ -22,8 +36,8 @@ export default function EntryDetail({ id, onClose, open }) {
         <button className="iconbtn" onClick={onClose} aria-label={t('Close')}><Icon n="close" size={20} /></button>
       </div>
       <Seg value={tab} onChange={setTab} items={[['words', t('What you said')], ['refl', t('Reflection')], ['themes', t('Themes')], ['next', t('Try next')]]} />
-      {tab === 'words' && <p dir="auto" style={{ whiteSpace: 'pre-wrap' }}>{e.text || t('No text was saved for this one.')}</p>}
-      {tab === 'refl' && (r ? <ReflectionView r={r} /> : <p className="lead">{t('No reflection for this one yet.')}</p>)}
+      {tab === 'words' && <p dir="auto" style={{ whiteSpace: 'pre-wrap' }}>{e.text ? <Marked text={e.text} q={hl} refEl={markRef} /> : t('No text was saved for this one.')}</p>}
+      {tab === 'refl' && (r ? <ReflectionView r={r} onQuote={goQuote} /> : <p className="lead">{t('No reflection for this one yet.')}</p>)}
       {tab === 'themes' && (mine.length ? mine.map((th) => (
         <div className="card" key={th.id}>
           <h3>{he && th.he ? th.he : th.en}</h3>
