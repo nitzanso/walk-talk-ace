@@ -8,6 +8,9 @@ Style: plain, kind, concrete, in the person's language. Never say "move on", "ac
 Return ONLY JSON with these keys:
 "headline": one sentence, what this recording was about, in their words where you can.
 "process": one sentence on how their thinking moved (for example circling, then clearer).
+"heard": 3 to 4 sentences retelling what they said in order, in plain words, close to their own wording, so they feel truly listened to. Not advice.
+"underneath": 2 to 3 sentences, tentative ("It sounds like...", "Maybe..."), on what seems to matter to them underneath: a need, a value, a fear, or a hope. Offer it as a guess they can reject.
+"holding": 1 to 2 sentences on what they are carrying right now and one thing they are already doing well. Specific, no flattery.
 "feelings": 2 to 5 of {"name": a feeling word, "quote": exact words from the text that show it, "pleasant": true|false, "energy": "high"|"low"}.
 "traps": 0 to 2 of {"id": one of [${TRAPS}], "quote": exact words, "why": one sentence in plain words}. Include a trap ONLY if the quote clearly shows it. Sadness, grief and anger are NOT traps.
 "strengths": 0 to 2 of {"id": one of [${STRENGTHS}], "quote": exact words, "how": one sentence on how it showed up}.
@@ -29,6 +32,9 @@ export function clean(json, text) {
   const out = {
     headline: safe(json.headline) ? json.headline : '',
     process: safe(json.process) ? json.process : '',
+    heard: safe(json.heard) ? json.heard : '',
+    underneath: safe(json.underneath) ? json.underneath : '',
+    holding: safe(json.holding) ? json.holding : '',
     newThing: safe(json.newThing) ? json.newThing : '',
     feelings: arr(json.feelings).filter((f) => f && f.name && ok(f.quote)).slice(0, 5),
     traps: arr(json.traps).filter((x) => x && ['mindreading', 'me', 'them', 'catastrophe', 'helpless'].includes(x.id) && ok(x.quote) && safe(x.why)).slice(0, 2),
@@ -54,7 +60,7 @@ export default async function handler(req, res) {
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
       model: process.env.REFLECT_MODEL || 'claude-haiku-5-5',
-      max_tokens: 1400,
+      max_tokens: 2000,
       system: SYSTEM + (tone === 'warm' ? '\nTone: warm.' : '\nTone: plain and direct.') + (String(lang).startsWith('he') ? '\nWrite every field except "id" and "tool" in Hebrew, without assuming the person\'s gender.' : ''),
       messages: [{ role: 'user', content: t }],
     }),

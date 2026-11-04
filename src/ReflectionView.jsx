@@ -31,6 +31,13 @@ export default function ReflectionView({ r, allowPocket }) {
       <p className="lead">{r.headline || r.process}</p>
       {r.headline && r.process && <p className="small">{r.process}</p>}
 
+      {(r.heard || r.underneath || r.holding) && (
+        <Row title={t('In more depth')} count="" startOpen>
+          {r.heard && <div className="mitem"><span className="small">{t('What I heard')}</span><p dir="auto">{r.heard}</p></div>}
+          {r.underneath && <div className="mitem"><span className="small">{t('What may be underneath')}</span><p dir="auto">{r.underneath}</p></div>}
+          {r.holding && <div className="mitem"><span className="small">{t('What you are carrying, and doing well')}</span><p dir="auto">{r.holding}</p></div>}
+        </Row>
+      )}
       {feelings.length > 0 && (
         <Row title={t('Feelings I heard')} count={feelings.length} startOpen>
           {feelings.map((f) => (

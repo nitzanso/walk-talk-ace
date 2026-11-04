@@ -198,6 +198,9 @@ export const CRISIS_RE = /(kill myself|end my life|end it all|suicid|want to die
 export const SAMPLE_REFLECTION = {
   headline: 'You are looking at what happened from more than one side, and it hurts.',
   process: 'You start with questions and circle for a while. The clearer sentences come near the end.',
+  heard: 'You started by asking questions about what happened. You went back over it a few times, looking at it from his side and from yours. Near the end you said you did it, and that you are scared of the day it gets real.',
+  underneath: 'It sounds like part of you wants to be fair to both of you, and another part is afraid of the hardest day. Maybe what matters most right now is feeling safe enough to be honest without losing yourself.',
+  holding: 'You are carrying a lot of uncertainty at once. And you are already doing something hard: naming your own part without turning it against yourself.',
   feelings: [
     { name: 'Longing', quote: 'we still do', pleasant: false, energy: 'low' },
     { name: 'Fear', quote: 'scared of the day', pleasant: false, energy: 'high' },

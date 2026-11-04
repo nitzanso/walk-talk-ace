@@ -375,5 +375,9 @@ const HE = {
   "You named {f} earlier. How is it now?": "נתתם שם ל{f} קודם. איך זה עכשיו?",
   "You have something in your pocket": "יש לכם משהו בכיס",
   "No text was saved for this one.": "לא נשמר טקסט להקלטה הזו.",
+  "In more depth": "בעומק קצת יותר",
+  "What I heard": "מה ששמעתי",
+  "What may be underneath": "מה שאולי מתחת",
+  "What you are carrying, and doing well": "מה שאת נושאת, ומה שאת עושה טוב",
 };
 export default HE;
