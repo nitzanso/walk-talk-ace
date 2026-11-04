@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import Blob, { AceCard } from './Blob.jsx';
 import { db, useQuery } from './db.js';
 import { useI18n } from './i18n.jsx';
+import { motion } from 'motion/react';
 import { Seg, Icon } from './ui.jsx';
+import { TRAPS, STRENGTHS, nm } from './knowledge.js';
 
 const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; };
 const when = (ts, lang) => new Date(ts).toLocaleDateString(lang, { day: 'numeric', month: 'short' }) + ' · ' + new Date(ts).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
@@ -39,109 +41,103 @@ function Timeline({ open }) {
   );
 }
 
-function InsightList({ kinds, empty }) {
-  const { t, he } = useI18n();
-  const rows = useQuery(() => db.insights.where('kind').anyOf(kinds).toArray(), [kinds.join()], []);
-  if (!rows.length) return empty ? <p className="small">{empty}</p> : null;
-  return rows.map((r) => (
-    <div className="card" key={r.id}>
-      <p dir="auto">{he && r.he ? r.he : r.en}</p>
-      {r.quote && <p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{r.quote}”</p>}
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <span className="small">{t('How sure I am:')} {t(r.confidence === 'medium' ? 'medium' : 'low')}</span>
-        <button className="link" onClick={() => db.insights.delete(r.id)}>{t('Not me')}</button>
-      </div>
-    </div>
-  ));
-}
+function Me() {
+  const { t, he, C } = useI18n();
+  const [opened, setOpened] = useState(false);
+  const [view, setView] = useState(null);
+  const ins = useQuery(() => db.insights.toArray(), [], []);
+  const refl = useQuery(() => db.reflections.toArray(), [], []);
+  const sets = useQuery(() => db.settings.toArray(), [], []);
+  const aces = useQuery(() => db.aces.count(), [], 0);
+  const ents = useQuery(() => db.entries.toArray(), [], []);
+  const R = [...refl.filter((x) => !x.sample).map((x) => x.reflection), ...ents.map((x) => x.reflection)].filter(Boolean);
+  const tally = (list, key) => { const m = {}; list.forEach((r) => (r[key] || []).forEach((x) => { const k = x.id || x.name; (m[k] = m[k] || []).push(x); })); return Object.entries(m).sort((p, q) => q[1].length - p[1].length); };
+  const strengthsR = tally(R, 'strengths').filter(([id]) => STRENGTHS[id]);
+  const trapsR = tally(R, 'traps').filter(([id]) => TRAPS[id]);
+  const feelR = tally(R, 'feelings');
+  const strengthI = ins.filter((x) => x.kind === 'strength');
+  const themes = ins.filter((x) => x.kind === 'theme');
+  const steady = ins.filter((x) => x.kind === 'steadies');
+  const wonder = ins.filter((x) => x.kind === 'open');
+  const words = ins.filter((x) => x.kind === 'myword');
+  const helped = sets.filter((f) => f.key.startsWith('fb:') && f.value === 'helped').map((f) => { const [, kind, id] = f.key.split(':'); const src = kind === 'light' ? C.LIGHTS : C.TOOLS; return (src.find((x) => x.id === id) || {}).title; }).filter(Boolean);
+  const passed = {}; sets.filter((x) => x.key.startsWith('passed:')).forEach((x) => { const n = x.key.split('|')[1]; (passed[n] = passed[n] || []).push(x.value); });
+  const txt = (r) => (he && r.he ? r.he : r.en);
+  const nStrength = strengthsR.length + strengthI.length;
+  const nTraps = trapsR.length + themes.length;
+  const nFeel = feelR.length;
+  const nHelps = steady.length + helped.length + words.length + aces;
+  const empty = nStrength + nTraps + nFeel + nHelps + wonder.length === 0;
+  const PASS = { gone: t('gone'), smaller: t('smaller'), same: t('the same'), bigger: t('bigger') };
 
-function ThemeMap({ open }) {
-  const { t, he, lang } = useI18n();
-  const themes = useQuery(() => db.insights.where('kind').equals('theme').toArray(), [], []);
-  const entries = useQuery(async () => (await db.entries.toArray()).filter((e) => e.text).sort((a, b) => a.created - b.created), [], []);
-  const [openId, setOpenId] = useState(null);
-  if (!themes.length) return <div className="card"><p className="small">{t('After a few recordings, themes show up here with the words that point to them.')}</p></div>;
-  const groups = [...new Set(themes.map((x) => x.group))];
-  const day = (ts) => new Date(ts).toLocaleDateString(lang, { day: 'numeric', month: 'short' });
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <h3>{t('What shows up again and again')}</h3>
-      <p className="small">{t('Each dot is one recording. A filled dot means the theme was in it. These are my reading of your words, not a diagnosis.')}</p>
-      {groups.map((g) => {
-        const rows = themes.filter((x) => x.group === g).sort((a, b) => (a.order || 0) - (b.order || 0));
-        const head = rows[0];
-        return (
-          <div className="card" key={g}>
-            <span className="eyebrow">{he && head.groupHe ? head.groupHe : head.groupEn}</span>
-            {rows.map((th) => {
-              const hits = entries.filter((e) => (e.themes || []).includes(th.slug));
-              const isOpen = openId === th.slug;
-              const last = [...hits].reverse().find((e) => e.themeQuotes && e.themeQuotes[th.slug]);
-              return (
-                <div key={th.slug} style={{ borderTop: '1px solid rgba(37,38,74,.08)', paddingTop: 10 }}>
-                  <button className="lhead" style={{ padding: 0, fontSize: 17 }} onClick={() => setOpenId(isOpen ? null : th.slug)} aria-expanded={isOpen}>
-                    <span>{he && th.he ? th.he : th.en}<span className="small" style={{ display: 'block', fontFamily: 'var(--body)' }}>{t('in {a} of {b} recordings', { a: hits.length, b: entries.length })}</span></span>
-                    <Icon n="chev" />
-                  </button>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', margin: '8px 0 2px' }} aria-hidden="true">
-                    {entries.map((e) => <span key={e.id} title={day(e.created)} style={{ width: 14, height: 14, borderRadius: '50%', background: (e.themes || []).includes(th.slug) ? th.color || '#25264A' : 'transparent', border: '2px solid ' + (th.color || '#25264A'), opacity: (e.themes || []).includes(th.slug) ? 1 : 0.35 }} />)}
-                  </div>
-                  <div className="small" style={{ display: 'flex', justifyContent: 'space-between' }}><span>{entries[0] ? day(entries[0].created) : ''}</span><span>{entries.length ? day(entries[entries.length - 1].created) : ''}</span></div>
-                  {isOpen && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-                      <p>{he && th.descHe ? th.descHe : th.desc}</p>
-                      {last && <p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{last.themeQuotes[th.slug]}” · {day(last.created)}</p>}
-                      {th.helps && <><b style={{ fontWeight: 500 }}>{t('What tends to help')}</b><ul style={{ paddingInlineStart: 20 }}>{(he && th.helpsHe ? th.helpsHe : th.helps).map((h) => <li key={h}>{h}</li>)}</ul></>}
-                      <div className="wrapchips">{hits.map((e) => <button key={e.id} className="tag" onClick={() => open('entry', { id: e.id })}>{day(e.created)}</button>)}</div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+  if (empty) return <p className="lead">{t('As you talk, I will gently note what I see. Nothing here yet.')}</p>;
+
+  if (!opened) return (
+    <div className="reveal">
+      <motion.div className="orb" animate={{ scale: [1, 1.06, 1], opacity: [0.9, 1, 0.9] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }} />
+      <p className="lead center">{t("Here is what I've noticed, in your words.")}</p>
+      <p className="small center">{t('You can remove anything that is not you.')}</p>
+      <button className="btn" onClick={() => setOpened(true)}>{t('Open')}</button>
     </div>
+  );
+
+  const Back = () => <button className="link" style={{ alignSelf: 'flex-start' }} onClick={() => setView(null)}>← {t('Back')}</button>;
+  const Item = ({ r }) => (
+    <div className="mitem"><p dir="auto">{txt(r)}</p>{r.quote && <p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{r.quote}”</p>}<button className="link small" onClick={() => db.insights.delete(r.id)}>{t('Not me')}</button></div>
+  );
+  const Page = ({ title, intro, children }) => <motion.div className="mpage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Back /><h2>{title}</h2>{intro && <p className="small">{intro}</p>}{children}</motion.div>;
+  const MeRow = ({ title, count, onClick, sub }) => <button className="lrow big" onClick={onClick}><span>{title}{sub && <span className="small" style={{ display: 'block', fontFamily: 'var(--body)' }}>{sub}</span>}</span><span className="small">{count}</span></button>;
+
+  if (view === 'strengths') return (
+    <Page title={t('What you are good at')} intro={t('Strengths are things that feel like you and give you energy. This is a way of seeing yourself, not a test.')}>
+      {strengthsR.map(([id, hits]) => (<div className="mitem" key={id}><b style={{ fontWeight: 500 }}>{nm(STRENGTHS[id], he)} <span className="small">· {hits.length}×</span></b><p>{nm(STRENGTHS[id].what, he)}</p><p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{hits[hits.length - 1].quote}”</p><p className="small">{t('The other side:')} {nm(STRENGTHS[id].shadow, he)}</p></div>))}
+      {strengthI.map((r) => <Item key={r.id} r={r} />)}
+    </Page>);
+  if (view === 'traps') return (
+    <Page title={t('What tends to come up')} intro={t('Habits of thinking and recurring themes, so you can meet them gently. Not flaws.')}>
+      {trapsR.map(([id, hits]) => (<div className="mitem" key={id}><b style={{ fontWeight: 500 }}>{nm(TRAPS[id], he)} <span className="small">· {hits.length}×</span></b><p>{nm(TRAPS[id].what, he)}</p><p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{hits[hits.length - 1].quote}”</p><p><b style={{ fontWeight: 500 }}>{t('To try:')}</b> {nm(TRAPS[id].tryIt, he)}</p></div>))}
+      {themes.map((th) => <div className="mitem" key={th.id}><b style={{ fontWeight: 500 }}>{he && th.he ? th.he : th.en}</b>{(th.desc || th.descHe) && <p className="small" dir="auto">{he && th.descHe ? th.descHe : th.desc}</p>}<button className="link small" onClick={() => db.insights.delete(th.id)}>{t('Not me')}</button></div>)}
+    </Page>);
+  if (view === 'feelings') return (
+    <Page title={t('Feelings')} intro={t('The feelings you named, and what happened to them. Feelings move.')}>
+      {feelR.map(([name, hits]) => (<div className="mitem" key={name}><b style={{ fontWeight: 500 }}>{name} <span className="small">· {hits.length}×</span></b><p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{hits[hits.length - 1].quote}”</p>{passed[name] && <p className="small">{t('Later you said it was')}: {passed[name].map((v) => PASS[v] || v).join(', ')}</p>}</div>))}
+    </Page>);
+  if (view === 'helps') return (
+    <Page title={t('What helps you')}>
+      {words.map((w) => <div className="mitem" key={w.id}><p className="lead" dir="auto">“{w.quote}”</p></div>)}
+      {steady.map((r) => <Item key={r.id} r={r} />)}
+      {helped.map((h) => <div className="mitem" key={h}><p>{h}</p></div>)}
+      {aces > 0 && <div className="mitem"><p>{t('You have {n} aces in your pocket.', { n: aces })}</p></div>}
+    </Page>);
+  if (view === 'wonder') return <Page title={t('Still wondering')}>{wonder.map((r) => <Item key={r.id} r={r} />)}</Page>;
+
+  return (
+    <motion.div className="mpage" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
+      <h2>{t('What I notice')}</h2>
+      {nStrength > 0 && <MeRow title={t('What you are good at')} count={nStrength} onClick={() => setView('strengths')} />}
+      {nTraps > 0 && <MeRow title={t('What tends to come up')} count={nTraps} onClick={() => setView('traps')} />}
+      {nFeel > 0 && <MeRow title={t('Feelings')} count={nFeel} onClick={() => setView('feelings')} />}
+      {nHelps > 0 && <MeRow title={t('What helps you')} count={nHelps} onClick={() => setView('helps')} />}
+      {wonder.length > 0 && <MeRow title={t('Still wondering')} count={wonder.length} onClick={() => setView('wonder')} />}
+    </motion.div>
   );
 }
 
-function Patterns({ open }) {
-  const { t, C } = useI18n();
-  const { LIGHTS, TOOLS } = C;
-  const checks = useQuery(() => db.checks.toArray(), [], []);
-  const all = useQuery(async () => [...(await db.checks.toArray()), ...(await db.entries.toArray()), ...(await db.aces.toArray()), ...(await db.reflections.toArray())].map((x) => x.created), [], []);
-  const fbs = useQuery(() => db.settings.where('key').startsWith('fb:').toArray(), [], []);
-  const days = [];
-  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d); }
-  const byDay = {}; checks.forEach((c) => { byDay[dayKey(c.created)] = c.mood; });
-  const showed = new Set(all.map(dayKey));
-  const tally = { good: 0, soso: 0, hard: 0 }; checks.forEach((c) => { if (tally[c.mood] !== undefined) tally[c.mood]++; });
-  const name = (k) => { const [, kind, id] = k.split(':'); const src = kind === 'light' ? LIGHTS : TOOLS; const f = src.find((x) => x.id === id); return f ? f.title : id; };
-  const helped = fbs.filter((f) => f.value === 'helped'); const no = fbs.filter((f) => f.value === 'no');
+function Pocket({ open }) {
+  const { t } = useI18n();
+  const words = useQuery(() => db.insights.where('kind').equals('myword').toArray(), [], []);
+  const answers = useQuery(() => db.answers.toArray(), [], []);
+  const refl = useQuery(() => db.reflections.toArray(), [], []);
+  const lights = [...new Set([...['fills', 'myself'].flatMap((q) => (answers.find((a) => a.qid === q) || {}).value || []).filter((v) => v !== 'Not sure' && v !== t('Not sure')), ...refl.flatMap((x) => ((x.reflection && !x.sample && x.reflection.lights) || []).map((l) => l.what))])];
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div className="card">
-        <h3>{t('Recent days')}</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 8 }}>
-          {days.filter((d) => byDay[dayKey(d)] || showed.has(dayKey(d))).map((d) => { const m = byDay[dayKey(d)]; return (
-            <div className="day" key={d.toISOString()}>{m ? <Blob mood={m} size={34} /> : <div className="ring" style={{ borderStyle: showed.has(dayKey(d)) ? 'solid' : 'dashed', background: showed.has(dayKey(d)) ? '#fff' : 'transparent' }} />}{d.getDate()}</div>
-          ); })}
-        </div>
-        
-      </div>
-      <div className="card">
-        <h3>{t('How days have felt')}</h3>
-        <p>{checks.length ? `${t('Lighter')} ${tally.good} · ${t('Okay')} ${tally.soso} · ${t('Heavy')} ${tally.hard}` : t('Check in a few days and a pattern starts to show.')}</p>
-        <p className="small">{t('Days you showed up: {n}. Never a streak, nothing resets.', { n: showed.size })}</p>
-      </div>
-      <ThemeMap open={open} />
-      <h3 style={{ marginTop: 4 }}>{t('What steadies you')}</h3>
-      <InsightList kinds={['steadies']} />
-      <div className="card">
-        <h3>{t('What helped')}</h3>
-        {helped.length ? <div className="wrapchips">{helped.map((f) => <span key={f.key} className="tag">{name(f.key)}</span>)}</div> : <p className="small">{t('Tap “This helped” on a card and it collects here.')}</p>}
-        {no.length > 0 && <><h3 style={{ marginTop: 6 }}>{t('Not for you')}</h3><div className="wrapchips">{no.map((f) => <span key={f.key} className="tag" style={{ background: '#EEE' }}>{name(f.key)}</span>)}</div><p className="small">{t("I'll show these less.")}</p></>}
-      </div>
+    <div className="plain">
+      <section className="grp"><span className="eyebrow">{t('Aces')}</span><Aces open={open} /></section>
+      <section className="grp"><span className="eyebrow">{t('My words')}</span>
+        {words.length ? words.map((w) => <div className="mitem" key={w.id}><p className="lead" dir="auto">“{w.quote}”</p><button className="link small" onClick={() => db.insights.delete(w.id)}>{t('Remove')}</button></div>) : <p className="small">{t('Sentences of yours that steady you will collect here. After a reflection, you can add one.')}</p>}
+      </section>
+      <section className="grp"><span className="eyebrow">{t('What lights me up')}</span>
+        {lights.length ? <div className="wrapchips">{lights.map((l) => <span className="tag" key={l}>{l}</span>)}</div> : <p className="small">{t('Things and people that bring you joy collect here as you talk.')}</p>}
+      </section>
     </div>
   );
 }
@@ -192,13 +188,12 @@ export default function Archive({ open }) {
   const { t } = useI18n();
   const [seg, setSeg] = useState('time');
   return (
-    <div className="screen">
+    <div className="screen plain">
       <h1>{t('Your archive')}</h1>
-      <Seg value={seg} onChange={setSeg} items={[['time', t('Timeline')], ['pat', t('Patterns')], ['aces', t('Aces')], ['me', t('About me')]]} />
+      <Seg value={seg} onChange={setSeg} items={[['time', t('Timeline')], ['me', t('Me')], ['aces', t('Pocket')]]} />
       {seg === 'time' && <Timeline open={open} />}
-      {seg === 'pat' && <Patterns open={open} />}
-      {seg === 'aces' && <Aces open={open} />}
-      {seg === 'me' && <About open={open} />}
+      {seg === 'aces' && <Pocket open={open} />}
+      {seg === 'me' && <Me />}
       <div style={{ height: 8 }} />
     </div>
   );

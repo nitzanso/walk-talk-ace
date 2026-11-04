@@ -13,13 +13,13 @@ const TOPICS = [
   ['body', "I don't know. I just feel off"],
 ];
 
-export default function Picker({ onClose, open }) {
+export default function Picker({ onClose, open, toolId }) {
   const { t, C } = useI18n();
   const { TOOLS } = C;
-  const [topic, setTopic] = useState(null);
-  const [low, setLow] = useState(null);
+  const [topic, setTopic] = useState(toolId ? 'direct' : null);
+  const [low, setLow] = useState(toolId ? false : null);
   const [n, setN] = useState(0);
-  const [order, setOrder] = useState([]);
+  const [order, setOrder] = useState(toolId ? [toolId] : []);
   const fbs = useQuery(() => db.settings.where('key').startsWith('fb:tool:').toArray(), [], []);
   const uses = useQuery(() => db.settings.where('key').startsWith('use:').toArray(), [], []);
   const val = (id) => (fbs.find((f) => f.key === 'fb:tool:' + id) || {}).value;

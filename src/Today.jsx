@@ -4,6 +4,7 @@ import Blob, { Landscape, Sun } from './Blob.jsx';
 import { db, useQuery, useSetting, setSetting } from './db.js';
 import { useI18n } from './i18n.jsx';
 import { Helpful, Icon } from './ui.jsx';
+import { chooseOne } from './guide.js';
 
 const startOfDay = (d = new Date()) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 
@@ -35,9 +36,22 @@ export default function Today({ open }) {
   const checks = useQuery(() => db.checks.orderBy('created').reverse().limit(30).toArray(), []);
   const aceCount = useQuery(() => db.aces.count(), [], 0);
   const words = useQuery(() => db.insights.where('kind').equals('myword').toArray(), [], []);
+  const sets = useQuery(() => db.settings.toArray(), [], []);
+  const refl = useQuery(() => db.reflections.toArray(), [], []);
 
   const today = checks.find((c) => c.created >= startOfDay());
   const pick = async (m) => { await db.checks.add({ created: Date.now(), mood: m }); if (navigator.vibrate) navigator.vibrate(15); };
+  const fbs = {}; sets.filter((s) => s.key.startsWith('fb:tool:')).forEach((s) => { fbs[s.key.slice(8)] = s.value; });
+  const uses = sets.filter((s) => s.key.startsWith('use:') && s.value).map((s) => s.value);
+  const guide = today ? chooseOne({ tools: C.TOOLS, uses, fbs, mood: today.mood, helpedDone: uses }) : null;
+  const answeredKeys = new Set(sets.filter((s) => s.key.startsWith('passed:')).map((s) => s.key));
+  const ask = (() => {
+    const old = refl.filter((x) => x.reflection && !x.sample && Date.now() - x.created > 8 * 3600e3 && Date.now() - x.created < 5 * 86400e3 && (x.reflection.feelings || []).length).sort((a, b) => b.created - a.created);
+    for (const x of old) { for (const f of x.reflection.feelings) { if (!f.pleasant && !answeredKeys.has('passed:' + x.id + '|' + f.name)) return { x, f }; } }
+    return null;
+  })();
+  const answerPass = (v) => db.settings.put({ key: 'passed:' + ask.x.id + '|' + ask.f.name, value: v });
+  const pocketCount = aceCount + words.length;
   const hour = new Date().getHours();
   const hi = hour < 12 ? t('Good morning') : hour < 18 ? t('Hello') : t('Good evening');
   const w = today && today.mood === 'hard' && words.length ? words[Math.floor(Date.now() / 86400000) % words.length] : null;
@@ -64,8 +78,25 @@ export default function Today({ open }) {
             </div>
           </div>
         ) : (
-          <p className="center small" dir="auto">{w ? <>“{w.quote}”<br /><span>{t('From you, on a steadier day')}</span></> : MESSAGES[tone][today.mood]}</p>
+          <>
+            {guide && guide.pick && (
+              <div className="hl">
+                <span className="small">{t('One small thing for today')}</span>
+                <b className="lead" style={{ fontWeight: 400 }}>{guide.pick.title}</b>
+                <p className="small">{guide.pick.why}</p>
+                <button className="btn" onClick={() => open('picker', { toolId: guide.pick.id })}>{t("Okay, let's do it")}</button>
+                {guide.other && <button className="link" onClick={() => open('picker', { toolId: guide.other.id })}>{t('Something else')}</button>}
+              </div>
+            )}
+          </>
         )}
+        {ask && (
+          <div className="moodrow">
+            <span className="small" dir="auto">{t('You named {f} earlier. How is it now?', { f: ask.f.name })}</span>
+            <div className="pills">{[['gone', t('gone')], ['smaller', t('smaller')], ['same', t('the same')], ['bigger', t('bigger')]].map(([v, l]) => <button key={v} className="pill" style={{ fontSize: 14 }} onClick={() => answerPass(v)}>{l}</button>)}</div>
+          </div>
+        )}
+        {pocketCount > 0 && <button className="link center small" onClick={() => open('aces')}>{t('You have something in your pocket')}</button>}
         <button className="link center" onClick={() => open('picker')}>{t('Not ready to talk? Help me find one thing')}</button>
       </div>
     </div>

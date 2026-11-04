@@ -52,7 +52,7 @@ function Shell() {
               {ov.name === 'talk' && <Talk onDone={close} onReflect={reflect} onCrisis={crisis} />}
               {ov.name === 'type' && <Type onDone={close} onReflect={reflect} onCrisis={crisis} />}
               {ov.name === 'library' && <Library onClose={close} />}
-              {ov.name === 'picker' && <Picker onClose={close} open={open} />}
+              {ov.name === 'picker' && <Picker onClose={close} open={open} toolId={ov.toolId} />}
               {ov.name === 'breathe' && <Breathe onClose={close} />}
               {ov.name === 'ace' && <AceFlow onClose={close} />}
               {ov.name === 'aces' && <AcesList onClose={close} open={open} />}
@@ -63,12 +63,12 @@ function Shell() {
           )}
         </AnimatePresence>
       </div>
-      {!ov && <nav className="tabbar" aria-label="Main">
-        {TABS.map((tb) => tb ? (
+      {!ov && <nav className="tabbar" aria-label="Main" style={tab === 'today' ? { gridTemplateColumns: '1fr 1fr 1fr' } : undefined}>
+        {TABS.filter((tb) => tab !== 'today' || tb).map((tb) => tb ? (
           <button key={tb[0]} className={'tab' + (tab === tb[0] && !ov ? ' on' : '')} onClick={() => open(tb[0])} aria-current={tab === tb[0] ? 'page' : undefined}>
             <Icon n={tb[2]} size={24} />{t(tb[1])}<span className="ind" />
           </button>
-        ) : tab === 'today' ? <div key="rec" /> : (
+        ) : (
           <div key="rec" style={{ position: 'relative' }}>
             <button className="fab" onClick={() => open('talk')} aria-label={t('Talk')}><Icon n="mic" size={34} color="#fff" /></button>
             <span className="fablabel">{t('Talk')}</span>

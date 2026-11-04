@@ -157,6 +157,30 @@ export const TOOLS = [
     steps: ['Notice a line like "you made me feel ___".', 'Try: "I felt ___ when ___, and I needed ___."'],
     example: '"You made me feel helpless" → "I felt helpless when I couldn\'t see a way forward, and I needed to know we\'d work it out."',
   },
+  {
+    id: 'hobby-ten', title: 'Ten minutes of something you love', for: ['empty', 'body', 'heavy'], low: true,
+    why: 'Doing something that absorbs you, even briefly, gives the mind a rest from the hurt. It is not running away; it is part of the balance.',
+    steps: ['Pick something you enjoy and can start in a minute.', 'Put the phone in another room for ten minutes.', 'When the time is up, notice how you feel, whatever it is.'],
+    example: '"Ten minutes of drawing," "one song on the guitar," "a short yoga flow," "chopping vegetables slowly."',
+  },
+  {
+    id: 'time-with-loved', title: 'A little time with someone who is good for you', for: ['empty', 'heavy', 'body'], low: false,
+    why: 'Being with people we love is one of the most reliable sources of well-being in the research you studied. It does not have to be a deep talk.',
+    steps: ['Think of one person you feel good around.', 'Choose something small to do together or near each other.', 'Say in one line what you would like. You can keep it simple.'],
+    example: '"Coffee with Dana on Thursday," "sit in the same room and each do our own thing," "a walk with my sister."',
+  },
+  {
+    id: 'small-finish', title: 'Finish one tiny thing', for: ['empty', 'thoughts', 'body'], low: true,
+    why: 'Completing something small gives a feeling of having done something, which matters when everything feels out of hand.',
+    steps: ['Pick one task that takes five minutes or less.', 'Do only that task.', 'Tick it, or say out loud: "That one is done."'],
+    example: '"Answer one message," "wash the cups," "fold one pile of clothes."',
+  },
+  {
+    id: 'one-for-someone', title: 'One small thing for someone else', for: ['empty', 'heavy', 'body'], low: false,
+    why: 'Doing something for another person, or for something you care about, is a steady source of meaning. It can be very small, and you do not owe it to anyone.',
+    steps: ['Think of one person or cause you care about.', 'Pick the smallest useful thing you could do.', 'Do it, or put it in your calendar.'],
+    example: '"Send a student a short encouraging note," "water a neighbor\'s plants," "share a recipe."',
+  },
 ];
 
 export const QUESTIONS = [
@@ -172,13 +196,16 @@ export const ALLOWED_EXAMPLES = ['Smoking a few cigarettes', 'Comfort food', 'St
 export const CRISIS_RE = /(kill myself|end my life|end it all|suicid|want to die|don't want to be alive|do not want to be alive|להתאבד|התאבדות|לא רוצה לחיות|רוצה למות|לסיים את החיים)/i;
 
 export const SAMPLE_REFLECTION = {
-  process: 'You begin with questions and circle for a while. The clearer sentences come near the end.',
+  headline: 'You are looking at what happened from more than one side, and it hurts.',
+  process: 'You start with questions and circle for a while. The clearer sentences come near the end.',
   feelings: [
-    { name: 'Longing', quote: 'we still do' },
-    { name: 'Fear', quote: 'scared of the day' },
-    { name: 'Pride', quote: 'I did it' },
+    { name: 'Longing', quote: 'we still do', pleasant: false, energy: 'low' },
+    { name: 'Fear', quote: 'scared of the day', pleasant: false, energy: 'high' },
+    { name: 'Pride', quote: 'I did it', pleasant: true, energy: 'high' },
   ],
+  traps: [{ id: 'catastrophe', quote: 'scared of the day', why: 'The mind jumps ahead to the hardest day and treats it as certain.' }],
+  strengths: [{ id: 'honesty', quote: 'I did it', how: 'You say plainly what is true for you, including your own part.' }],
   newThing: 'This is the first time you named your own part.',
-  invitation: 'On your next walk, say one thing you know and one thing you are guessing. For example: "I know he hasn\'t written. I\'m guessing he\'s avoiding me."',
-  wording: { before: 'You made me feel helpless.', after: "I felt helpless when I couldn't see a way forward, and I needed to know we'd work it out." },
+  steadying: { quote: 'I did it' },
+  tool: 'worst-best-likely',
 };

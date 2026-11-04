@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { db, getSetting } from './db.js';
 import { Icon } from './ui.jsx';
+import ReflectionView from './ReflectionView.jsx';
 import { useI18n } from './i18n.jsx';
 
 export default function Reflection({ text, onClose }) {
@@ -43,35 +44,16 @@ export default function Reflection({ text, onClose }) {
       </div>
     );
   }
-  const h = { color: '#1F6B67' };
   return (
-    <div className="screen">
+    <div className="screen plain">
       <div className="top">
         <div><span className="eyebrow">{t('After your walk')}</span><h1>{t('What I heard')}</h1></div>
         <button className="iconbtn" onClick={onClose} aria-label={t('Close')}><Icon n="close" size={20} /></button>
       </div>
-      {state !== 'real' && (
-        <div className="card" style={{ background: '#FFF3CF' }}>
-          <p><b style={{ fontWeight: 500 }}>{t('This is a sample.')}</b> {state === 'error' ? t("The connection didn't answer, so this shows the shape only.") : ''} {t('It is not about what you said.')}</p>
-        </div>
-      )}
-      <div className="card"><h3 style={h}>{t('A read of your process')}</h3><p>{r.process}</p><p className="small">{t("Tell me if this isn't right.")}</p></div>
-      <div className="card">
-        <h3 style={h}>{t('Feelings, in your words')}</h3>
-        <div className="wrapchips">{r.feelings.map((f) => <span key={f.name} className="tag">{f.name}: “{f.quote}”</span>)}</div>
-      </div>
-      <div className="card"><h3 style={h}>{t('New since last time')}</h3><p>{r.newThing}</p></div>
-      {r.wording && (
-        <div className="card" style={{ border: '2px solid var(--sun)' }}>
-          <h3 style={h}>{t('Your wording')}</h3>
-          <p className="small">{t('Saying it this way is fine. If you want another way to say it, here is one.')}</p>
-          <p style={{ color: 'var(--muted)', textDecoration: 'line-through' }}>“{r.wording.before}”</p>
-          <p style={{ fontWeight: 500 }}>→ “{r.wording.after}”</p>
-        </div>
-      )}
-      <div className="card" style={{ background: '#E3ECEA' }}><h3>{t('If you feel like it')}</h3><p>{r.invitation}</p></div>
-      <div className="card">
-        <p className="small">{t('Did this feel true?')}</p>
+      {state !== 'real' && <p className="small">{t('This is a sample.')} {state === 'error' ? t("The connection didn't answer, so this shows the shape only.") : ''} {t('It is not about what you said.')}</p>}
+      <ReflectionView r={r} allowPocket={state === 'real'} />
+      <div className="fld">
+        <span className="small">{t('Did this feel true?')}</span>
         <div className="pills">
           {[['true', t('True')], ['notquite', t('Not quite')], ['missed', t('Missed it')]].map(([k, l]) => <button key={k} className={'pill' + (fb === k ? ' on' : '')} onClick={() => rate(k)}>{l}</button>)}
         </div>

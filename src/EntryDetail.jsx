@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db, useQuery } from './db.js';
 import { Icon, Seg, Helpful } from './ui.jsx';
 import { useI18n } from './i18n.jsx';
+import ReflectionView from './ReflectionView.jsx';
 
 export default function EntryDetail({ id, onClose, open }) {
   const { t, he, lang } = useI18n();
@@ -19,15 +20,8 @@ export default function EntryDetail({ id, onClose, open }) {
         <button className="iconbtn" onClick={onClose} aria-label={t('Close')}><Icon n="close" size={20} /></button>
       </div>
       <Seg value={tab} onChange={setTab} items={[['words', t('What you said')], ['refl', t('Reflection')], ['themes', t('Themes')], ['next', t('Try next')]]} />
-      {tab === 'words' && <div className="card"><p dir="auto" style={{ whiteSpace: 'pre-wrap' }}>{e.text || t('No text was saved for this one.')}</p></div>}
-      {tab === 'refl' && (r ? (
-        <>
-          <div className="card"><h3 style={{ color: '#1F6B67' }}>{t('A read of your process')}</h3><p>{r.process}</p></div>
-          <div className="card"><h3 style={{ color: '#1F6B67' }}>{t('Feelings, in your words')}</h3><div className="wrapchips">{r.feelings.map((f) => <span key={f.name} className="tag">{f.name}: “{f.quote}”</span>)}</div></div>
-          <div className="card"><h3 style={{ color: '#1F6B67' }}>{t('New since last time')}</h3><p>{r.newThing}</p></div>
-          <p className="small">{t('This is my read, written from your words. Tell me if it is wrong.')}</p>
-        </>
-      ) : <div className="card"><p>{t('No reflection for this one yet.')}</p></div>)}
+      {tab === 'words' && <p dir="auto" style={{ whiteSpace: 'pre-wrap' }}>{e.text || t('No text was saved for this one.')}</p>}
+      {tab === 'refl' && (r ? <ReflectionView r={r} /> : <p className="lead">{t('No reflection for this one yet.')}</p>)}
       {tab === 'themes' && (mine.length ? mine.map((th) => (
         <div className="card" key={th.id}>
           <h3>{he && th.he ? th.he : th.en}</h3>

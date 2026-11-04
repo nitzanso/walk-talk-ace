@@ -134,3 +134,31 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px soli
 .below{display:flex;flex-direction:column;gap:10px;align-items:stretch;padding-bottom:6px}
 .moodrow{display:flex;flex-direction:column;align-items:center;gap:8px}
 .moodrow .pills{width:100%}
+
+/* plain lists instead of boxes */
+.plain{gap:20px}
+.grp{display:flex;flex-direction:column;gap:6px}
+.fld{display:flex;flex-direction:column;gap:6px;padding:6px 0}
+.lrow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;background:none;border:0;border-bottom:1px solid rgba(37,38,74,.12);padding:16px 2px;font-size:17px;text-align:start}
+.lrow.big{font-family:var(--display);font-size:21px;padding:22px 2px}
+.lrow .rtlflip,.lrow svg{transform:rotate(-90deg)}
+[dir=rtl] .lrow svg{transform:rotate(90deg)}
+.adv summary{cursor:pointer;padding:10px 0}
+.adv{display:flex;flex-direction:column;gap:10px}
+.reveal{display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:30px}
+.orb{width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3CF,#F4D58D 55%,#F2B24A);box-shadow:0 0 0 18px rgba(244,213,141,.25),0 0 0 40px rgba(244,213,141,.12);margin-bottom:26px}
+.mpage{display:flex;flex-direction:column;gap:14px}
+.mitem{display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid rgba(37,38,74,.1)}
+.mitem .link{align-self:flex-start;min-height:32px;padding:0}
+
+.refl{display:flex;flex-direction:column;gap:16px}
+.rrow{display:flex;flex-direction:column}
+.rrow .lrow{gap:12px}
+.rrow .lrow>span:first-child{flex:1;font-family:var(--display);font-size:19px}
+.rbody{display:flex;flex-direction:column;gap:12px;padding:14px 2px 8px}
+.fl{display:flex;gap:12px;align-items:flex-start}
+.fl .dot{width:14px;height:14px;border-radius:50%;margin-top:6px;flex-shrink:0}
+
+.hl{display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.7);border-radius:22px;padding:18px 20px}
+.bigmic{width:140px;height:140px;margin-bottom:14px}
+.hero{gap:8px}

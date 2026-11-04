@@ -1,15 +1,50 @@
 // Vercel serverless function. The Anthropic key lives only in Vercel's environment variables (ANTHROPIC_API_KEY).
-const SYSTEM = `You write a short reflection for a person who just spoke or wrote about a hard time. You are not a therapist and you never diagnose.
-Rules: plain, kind, concrete. Use the person's own words for feelings (quote short phrases from their text). No "what would you say to a friend". No long question lists. At most one small optional invitation, with a concrete example. If they blamed ("you made me feel..."), offer one alternative wording in the form "I felt ___ when ___, and I needed ___" using their content, and say the original is fine too. Never mention self-harm methods. Write in the language the person used.
-Return ONLY JSON: {"process": string (2-3 sentences: how the person moved through their thoughts), "feelings": [{"name": string, "quote": string}] (2-4), "newThing": string (one sentence: something that seems new or different), "invitation": string (one optional small step with an example), "wording": {"before": string, "after": string} or null}`;
+// The model fills a fixed structure. This function then checks that every quote appears word for word in the person's text, and drops anything that does not.
+const TRAPS = 'mindreading (decides what someone thinks or feels without asking), me (takes all the blame), them (puts all the cause on someone else), catastrophe (jumps to the worst outcome), helpless (believes nothing they do matters)';
+const STRENGTHS = 'creativity, curiosity, judgment, learning, perspective, bravery, perseverance, honesty, zest, love, kindness, social, teamwork, fairness, leadership, forgiveness, humility, prudence, selfreg, beauty, gratitude, hope, humor, spirituality';
+const TOOLS = 'kind-company, belly-breath, senses-walk, name-feeling, know-guess, evidence, worst-best-likely, if-then, company-near, remember-through, feel-break, one-good, angry-sentence, wording, hobby-ten, time-with-loved, small-finish, one-for-someone';
+const SYSTEM = `You read what a person said out loud about something hard, and fill a structure. You are not a therapist and you never diagnose.
+Style: plain, kind, concrete, in the person's language. Never say "move on", "accept it", "be strong", "get over it", "what would you say to a friend". Do not tell the person what to do about people in their life.
+Return ONLY JSON with these keys:
+"headline": one sentence, what this recording was about, in their words where you can.
+"process": one sentence on how their thinking moved (for example circling, then clearer).
+"feelings": 2 to 5 of {"name": a feeling word, "quote": exact words from the text that show it, "pleasant": true|false, "energy": "high"|"low"}.
+"traps": 0 to 2 of {"id": one of [${TRAPS}], "quote": exact words, "why": one sentence in plain words}. Include a trap ONLY if the quote clearly shows it. Sadness, grief and anger are NOT traps.
+"strengths": 0 to 2 of {"id": one of [${STRENGTHS}], "quote": exact words, "how": one sentence on how it showed up}.
+"newThing": one sentence about something new or a link between two things they said, or "" if none.
+"steadying": {"quote": exact words} for one sentence of theirs that sounds steady or rational, or null.
+"lights": 0 to 3 of {"what": a person, activity or hobby that seems to bring them joy, "quote": exact words}.
+"tool": one id from [${TOOLS}] that fits what they said, or null.
+Every "quote" must be copied exactly from the text, in its original language. If unsure, leave the item out.`;
 
 const CRISIS = /(kill myself|end my life|suicid|want to die|להתאבד|התאבדות|לא רוצה לחיות|רוצה למות)/i;
+const BANNED = /(move on|accept it|be strong|get over|תמשיכ|לקבל ולהמשיך|תתחזק|תתגבר)/i;
+const norm = (s) => String(s || '').toLowerCase().replace(/[\s"'“”‘’.,!?;:()\-־]+/g, ' ').trim();
+
+export function clean(json, text) {
+  const body = norm(text);
+  const ok = (q) => q && norm(q).length > 2 && body.includes(norm(q));
+  const safe = (s) => typeof s === 'string' && !BANNED.test(s);
+  const arr = (a) => (Array.isArray(a) ? a : []);
+  const out = {
+    headline: safe(json.headline) ? json.headline : '',
+    process: safe(json.process) ? json.process : '',
+    newThing: safe(json.newThing) ? json.newThing : '',
+    feelings: arr(json.feelings).filter((f) => f && f.name && ok(f.quote)).slice(0, 5),
+    traps: arr(json.traps).filter((x) => x && ['mindreading', 'me', 'them', 'catastrophe', 'helpless'].includes(x.id) && ok(x.quote) && safe(x.why)).slice(0, 2),
+    strengths: arr(json.strengths).filter((x) => x && ok(x.quote) && safe(x.how)).slice(0, 2),
+    steadying: json.steadying && ok(json.steadying.quote) ? { quote: json.steadying.quote } : null,
+    lights: arr(json.lights).filter((x) => x && x.what && ok(x.quote)).slice(0, 3),
+    tool: typeof json.tool === 'string' ? json.tool : null,
+  };
+  return out;
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return res.status(503).json({ error: 'not configured' });
-  const { text = '', tone = 'direct' } = req.body || {};
+  const { text = '', tone = 'direct', lang = 'en-US' } = req.body || {};
   const t = String(text).trim();
   if (t.length < 10) return res.status(400).json({ error: 'too short' });
   if (t.length > 8000) return res.status(413).json({ error: 'too long' });
@@ -19,8 +54,8 @@ export default async function handler(req, res) {
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
       model: process.env.REFLECT_MODEL || 'claude-haiku-5-5',
-      max_tokens: 900,
-      system: SYSTEM + (tone === 'warm' ? '\nTone: warm.' : '\nTone: plain and direct.'),
+      max_tokens: 1400,
+      system: SYSTEM + (tone === 'warm' ? '\nTone: warm.' : '\nTone: plain and direct.') + (String(lang).startsWith('he') ? '\nWrite every field except "id" and "tool" in Hebrew, without assuming the person\'s gender.' : ''),
       messages: [{ role: 'user', content: t }],
     }),
   });
@@ -29,6 +64,6 @@ export default async function handler(req, res) {
   const raw = (data.content && data.content[0] && data.content[0].text) || '';
   try {
     const json = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
-    return res.status(200).json({ reflection: json });
+    return res.status(200).json({ reflection: clean(json, t), v: 2 });
   } catch { return res.status(502).json({ error: 'bad format' }); }
 }

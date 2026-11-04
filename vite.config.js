@@ -2,11 +2,15 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const BUILD = 'v4 · ' + new Date().toISOString().slice(0, 16).replace('T', ' ');
+const versionFile = { name: 'version-file', generateBundle() { this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ build: BUILD }) }); } };
+
 export default defineConfig({
-  define: { __BUILD__: JSON.stringify('v3 · ' + new Date().toISOString().slice(0,16).replace('T',' ')) },
+  define: { __BUILD__: JSON.stringify(BUILD) },
   base: './',
   plugins: [
     react(),
+    versionFile,
     VitePWA({
       registerType: 'autoUpdate',
       workbox: { skipWaiting: true, clientsClaim: true, cleanupOutdatedCaches: true },
