@@ -19,6 +19,9 @@ function Mine() {
   const fbs = useQuery(() => db.settings.where('key').startsWith('fb:').toArray(), [], []);
   const allowed = useQuery(() => db.allowed.toArray(), [], []);
   const [txt, setTxt] = useState('');
+  const mine = useQuery(() => db.toolbox.toArray(), [], []);
+  const [own, setOwn] = useState('');
+  const addOwn = async () => { const v = own.trim(); if (!v) return; await db.toolbox.add({ created: Date.now(), kind: 'mine', text: v }); setOwn(''); };
   const [warn, setWarn] = useState(false);
   const answers = useQuery(() => db.answers.toArray(), [], []);
   const good = fbs.filter((f) => f.value === 'helped');
@@ -33,7 +36,13 @@ function Mine() {
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div className="card"><h3>{t('Things that helped me')}</h3>{good.length ? <div className="wrapchips">{good.map((f) => <span className="tag" key={f.key}>{title(f.key)}</span>)}</div> : <p className="small">{t('Tap “This helped” on a card and it lands here.')}</p>}</div>
+      <div className="card"><h3>{t('Things that helped me')}</h3>{good.length ? <div className="wrapchips">{good.map((f) => <span className="tag" key={f.key}>{title(f.key)}</span>)}</div> : <p className="small">{t('Tap “This helped” on a card and it lands here.')}</p>}
+        {mine.filter((m) => m.text).map((m) => <button key={m.id} className="tag sel" dir="auto" onClick={() => db.toolbox.delete(m.id)} aria-label={`${t('Remove')} ${m.text}`}>{m.text} ×</button>)}
+        <p className="small">{t('Add something that helped you that is not on a card.')}</p>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input value={own} onChange={(e) => setOwn(e.target.value)} dir="auto" placeholder={t('For example: loud music while walking')} aria-label={t('Add something that helped you that is not on a card.')} style={{ flex: 1, minWidth: 0, height: 48, borderRadius: 24, border: 0, padding: '0 16px', fontSize: 16, background: '#fff' }} />
+          <button className="iconbtn" onClick={addOwn} aria-label={t('Add')}><Icon n="plus" size={20} /></button>
+        </div></div>
       <div className="card">
         <h3>{t("Things I'm not judging myself for")}</h3>
         <p className="small">{t('In hard times, some things are just ok. Add yours.')}</p>
@@ -49,7 +58,7 @@ function Mine() {
       </div>
       <div className="card">
         <h3>{t('Me at my best')}</h3>
-        {best.length ? <div className="wrapchips">{best.map((b) => <span className="tag" key={b}>{b}</span>)}</div> : <p className="small">{t('Answer the tiny questions on Today and the things that fill you up collect here.')}</p>}
+        {best.length ? <div className="wrapchips">{best.map((b) => <span className="tag" key={b}>{b}</span>)}{['fills', 'myself'].map((q) => (answers.find((a) => a.qid === q) || {}).text).filter(Boolean).map((tx) => <p key={tx} dir="auto" style={{ width: '100%' }}>{tx}</p>)}</div> : <p className="small">{t('Answer the tiny questions on Today and the things that fill you up collect here.')}</p>}
       </div>
     </div>
   );

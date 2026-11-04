@@ -31,6 +31,7 @@ export default function Today({ open }) {
   const { t, C, lang } = useI18n();
   const { MESSAGES, LIGHTS, QUESTIONS } = C;
   const [tone] = useSetting('tone', 'direct');
+  const [name] = useSetting('name', '');
   const [skipQ, , qReady] = useSetting('skipQ', {});
   const [since] = useSetting('onboardedAt', Date.now());
   const checks = useQuery(() => db.checks.orderBy('created').reverse().limit(30).toArray(), []);
@@ -69,7 +70,7 @@ export default function Today({ open }) {
   return (
     <div className="screen">
       <div className="top">
-        <div><span className="eyebrow">{new Date().toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'short' })}</span><h1>{hi}</h1></div>
+        <div><span className="eyebrow">{new Date().toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'short' })}</span><h1>{hi}{name ? ', ' + name : ''}</h1></div>
         <button className="acepill" onClick={() => open('aces')} aria-label={`${t('Your aces')}, ${aceCount}`}><Sun size={26} color="#25264A" />{aceCount}</button>
       </div>
 

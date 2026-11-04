@@ -37,6 +37,22 @@ function Timeline() {
   );
 }
 
+function InsightList({ kinds, empty }) {
+  const { t, he } = useI18n();
+  const rows = useQuery(() => db.insights.where('kind').anyOf(kinds).toArray(), [kinds.join()], []);
+  if (!rows.length) return empty ? <p className="small">{empty}</p> : null;
+  return rows.map((r) => (
+    <div className="card" key={r.id}>
+      <p dir="auto">{he && r.he ? r.he : r.en}</p>
+      {r.quote && <p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{r.quote}”</p>}
+      <div className="row" style={{ justifyContent: 'space-between' }}>
+        <span className="small">{t('How sure I am:')} {t(r.confidence === 'medium' ? 'medium' : 'low')}</span>
+        <button className="link" onClick={() => db.insights.delete(r.id)}>{t('Not me')}</button>
+      </div>
+    </div>
+  ));
+}
+
 function Patterns() {
   const { t, C } = useI18n();
   const { LIGHTS, TOOLS } = C;
@@ -66,6 +82,10 @@ function Patterns() {
         <p>{checks.length ? `${t('Good')} ${tally.good} · ${t('So-so')} ${tally.soso} · ${t('Hard')} ${tally.hard}` : t('Check in a few days and a pattern starts to show.')}</p>
         <p className="small">{t('Days you showed up: {n}. Never a streak, nothing resets.', { n: showed.size })}</p>
       </div>
+      <h3 style={{ marginTop: 4 }}>{t('What shows up again and again')}</h3>
+      <InsightList kinds={['pattern']} empty={t('After a few recordings, patterns show up here with the words that point to them.')} />
+      <h3 style={{ marginTop: 4 }}>{t('What steadies you')}</h3>
+      <InsightList kinds={['steadies']} />
       <div className="card">
         <h3>{t('What helped')}</h3>
         {helped.length ? <div className="wrapchips">{helped.map((f) => <span key={f.key} className="tag">{name(f.key)}</span>)}</div> : <p className="small">{t('Tap “This helped” on a card and it collects here.')}</p>}
@@ -82,7 +102,7 @@ export function Aces({ open }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <button className="btn soft" onClick={() => open('ace')}><Icon n="plus" size={20} /> {t('Add an ace')}</button>
       {aces.length === 0 ? <div className="card"><p>{t("Your aces are proof of hard things you've handled. Add one any time.")}</p></div> : (
-        <div className="acegrid">{aces.map((a) => <div key={a.id}><AceCard text={a.text} small={a.kind === 'small'} /></div>)}</div>
+        <div className="acegrid">{aces.map((a) => <div key={a.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}><div style={{ width: '100%' }}><AceCard text={a.text} small={a.kind === 'small'} /></div><button className="link" style={{ fontSize: 14 }} onClick={() => db.aces.delete(a.id)}>{t('Remove')}</button></div>)}</div>
       )}
     </div>
   );
@@ -99,6 +119,11 @@ function About({ open }) {
         <h3>{t("What I'm learning about you")}</h3>
         <p className="small">{t('Only what you told me. You can remove any of it.')}</p>
       </div>
+      <h3>{t('Strengths I see in you')}</h3>
+      <InsightList kinds={['strength']} />
+      <h3>{t('Things I am still wondering')}</h3>
+      <InsightList kinds={['open']} />
+      <h3>{t('What you told me')}</h3>
       {answers.length === 0 && <div className="card"><p>{t('Nothing yet. A tiny question shows up on Today now and then.')}</p></div>}
       {answers.map((a) => (
         <div className="card" key={a.qid}>

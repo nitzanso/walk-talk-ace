@@ -32,6 +32,7 @@ export default function Onboarding({ onFinish }) {
   const [purpose, setPurpose] = useState([]);
   const [detail, setDetail] = useState('');
   const [lang, setLang] = useState('he-IL');
+  const [name, setName] = useState('');
   const [mood, setMood] = useState(null);
   const next = () => setStep((s) => s + 1);
 
@@ -66,8 +67,9 @@ export default function Onboarding({ onFinish }) {
           <h1 style={{ fontSize: 34 }}>{t('Walk. Talk.')}<br />{t('Find your own strength.')}</h1>
           <p style={{ color: 'var(--muted)' }}>{t("A place to say what's on your mind out loud while you walk, and to see what you already carry.")}</p>
         </div>
+        <input value={name} onChange={(e) => setName(e.target.value)} dir="auto" placeholder={t('What should I call you?')} aria-label={t('What should I call you?')} autoComplete="given-name" style={{ height: 56, borderRadius: 28, border: 0, padding: '0 20px', fontSize: 18, background: '#fff', textAlign: 'center' }} />
         <div className="grow" />
-        <button className="btn" onClick={next}>{t('Begin')}</button>
+        <button className="btn" onClick={async () => { await setSetting('name', name.trim()); next(); }}>{t('Begin')}</button>
       </div>
     );
   } else if (step === 2) {

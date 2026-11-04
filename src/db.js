@@ -19,6 +19,20 @@ db.version(2).stores({
   reflections: '++id,created',
 });
 
+db.version(3).stores({
+  aces: '++id,created',
+  checks: '++id,created',
+  toolbox: '++id,created',
+  entries: '++id,created',
+  settings: 'key',
+  allowed: '++id,created',
+  answers: 'qid',
+  reflections: '++id,created',
+  insights: '++id,created,kind',
+});
+
+const TABLES = ['aces', 'checks', 'toolbox', 'entries', 'settings', 'allowed', 'answers', 'reflections', 'insights'];
+
 export function useQuery(fn, deps = [], initial = []) {
   const [v, setV] = useState(initial);
   useEffect(() => {
@@ -57,10 +71,26 @@ export async function showUpCount() {
 
 export async function exportAll() {
   const out = {};
-  for (const t of ['aces', 'checks', 'toolbox', 'entries', 'settings', 'allowed', 'answers', 'reflections']) out[t] = await db[t].toArray();
+  for (const t of TABLES) out[t] = await db[t].toArray();
   return out;
 }
 
 export async function wipeAll() {
-  await Promise.all(['aces', 'checks', 'toolbox', 'entries', 'settings', 'allowed', 'answers', 'reflections'].map((t) => db[t].clear()));
+  await Promise.all(TABLES.map((t) => db[t].clear()));
+}
+
+// Adds the contents of a pack file to what is already on the phone. Importing the same pack twice does nothing.
+export async function importPack(pack) {
+  if (!pack || typeof pack !== 'object') throw new Error('Not a pack file');
+  const done = (await getSetting('importedPacks', [])) || [];
+  if (pack.packId && done.includes(pack.packId)) return { skipped: true };
+  let n = 0;
+  for (const t of ['aces', 'checks', 'toolbox', 'entries', 'allowed', 'reflections', 'insights']) {
+    const rows = (pack[t] || []).map(({ id, ...r }) => r);
+    if (rows.length) { await db[t].bulkAdd(rows); n += rows.length; }
+  }
+  for (const a of pack.answers || []) { await db.answers.put(a); n++; }
+  for (const s of pack.settings || []) { await db.settings.put(s); n++; }
+  if (pack.packId) await setSetting('importedPacks', [...done, pack.packId]);
+  return { added: n };
 }
