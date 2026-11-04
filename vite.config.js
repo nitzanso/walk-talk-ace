@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  define: { __BUILD__: JSON.stringify('v3 · ' + new Date().toISOString().slice(0,16).replace('T',' ')) },
   base: './',
   plugins: [
     react(),

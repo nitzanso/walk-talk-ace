@@ -318,6 +318,10 @@ const HE = {
   "Start over": "מתחילים מחדש",
   "Help me find one thing": "עזרו לי למצוא דבר אחד",
   "Tell me where you are, I offer one small thing": "ספרו לי איפה אתם, ואציע דבר קטן אחד",
+  "Version": "גרסה",
+  "What's new": "מה חדש",
+  "Gentler tools, and a new button below: “Help me find one thing”. It asks where you are and offers just one small thing.": "כלים עדינים יותר, וכפתור חדש למטה: ״עזרו לי למצוא דבר אחד״. הוא שואל איפה אתם ומציע רק דבר קטן אחד.",
+  "Got it": "הבנתי",
   "No text was saved for this one.": "לא נשמר טקסט להקלטה הזו.",
 };
 export default HE;

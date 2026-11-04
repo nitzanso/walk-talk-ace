@@ -28,6 +28,7 @@ export default function More({ open }) {
   return (
     <div className="screen">
       <h1>{t('More')}</h1>
+      <p className="small">{t('Version')}: {typeof __BUILD__ !== 'undefined' ? __BUILD__ : 'dev'}</p>
       <div className="card">
         <h3>{t('My name')}</h3>
         <input value={nameDraft ?? name} dir="auto" onChange={(e) => setNameDraft(e.target.value)} onBlur={() => nameDraft !== null && setName(nameDraft.trim())} placeholder={t('What should I call you?')} aria-label={t('My name')} style={{ height: 48, borderRadius: 24, border: 0, padding: '0 16px', fontSize: 16, background: '#fff' }} />

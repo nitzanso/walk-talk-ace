@@ -41,6 +41,7 @@ export default function Today({ open }) {
   const fbs = useQuery(() => db.settings.where('key').startsWith('fb:').toArray(), []);
   const total = useQuery(async () => (await db.aces.count()) + (await db.checks.count()) + (await db.entries.count()) + (await db.toolbox.count()), [], 0);
 
+  const [seenV, setSeenV, seenReady] = useSetting('seenV', null);
   const today = checks.find((c) => c.created >= startOfDay());
   const mood = today ? today.mood : 'calm';
   const pick = async (m) => { await db.checks.add({ created: Date.now(), mood: m }); if (navigator.vibrate) navigator.vibrate(15); };
@@ -77,6 +78,13 @@ export default function Today({ open }) {
       </div>
 
       <Landscape mood={mood} />
+      {seenReady && seenV !== 3 && (
+        <div className="card" style={{ background: '#E3ECEA' }}>
+          <span className="eyebrow">{t("What's new")}</span>
+          <p>{t('Gentler tools, and a new button below: “Help me find one thing”. It asks where you are and offers just one small thing.')}</p>
+          <div className="fb"><button className="on" onClick={() => setSeenV(3)}>{t('Got it')}</button></div>
+        </div>
+      )}
 
       {!today ? (
         <div className="card">
