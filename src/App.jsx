@@ -13,10 +13,14 @@ import Breathe from './Breathe.jsx';
 import AceFlow from './AceFlow.jsx';
 import Reflection from './Reflection.jsx';
 import Support from './Support.jsx';
+import { I18n, useI18n } from './i18n.jsx';
 
 const TABS = [['today', 'Today', 'sun'], ['archive', 'Archive', 'path'], null, ['library', 'Library', 'book'], ['more', 'More', 'user']];
 
-export default function App() {
+export default function App() { return <I18n><Shell /></I18n>; }
+
+function Shell() {
+  const { t } = useI18n();
   const [onboarded, , ready] = useSetting('onboarded', false);
   const [done, setDone] = useState(false);
   const [tab, setTab] = useState('today');
@@ -56,14 +60,14 @@ export default function App() {
         </AnimatePresence>
       </div>
       {!ov && <nav className="tabbar" aria-label="Main">
-        {TABS.map((t) => t ? (
-          <button key={t[0]} className={'tab' + (tab === t[0] && !ov ? ' on' : '')} onClick={() => open(t[0])} aria-current={tab === t[0] ? 'page' : undefined}>
-            <Icon n={t[2]} size={24} />{t[1]}<span className="ind" />
+        {TABS.map((tb) => tb ? (
+          <button key={tb[0]} className={'tab' + (tab === tb[0] && !ov ? ' on' : '')} onClick={() => open(tb[0])} aria-current={tab === tb[0] ? 'page' : undefined}>
+            <Icon n={tb[2]} size={24} />{t(tb[1])}<span className="ind" />
           </button>
         ) : (
           <div key="rec" style={{ position: 'relative' }}>
-            <button className="fab" onClick={() => open('talk')} aria-label="Record: talk"><Icon n="mic" size={34} color="#fff" /></button>
-            <span className="fablabel">Talk</span>
+            <button className="fab" onClick={() => open('talk')} aria-label={t('Talk')}><Icon n="mic" size={34} color="#fff" /></button>
+            <span className="fablabel">{t('Talk')}</span>
           </div>
         ))}
       </nav>}
@@ -72,10 +76,11 @@ export default function App() {
 }
 
 function AcesList({ onClose, open }) {
+  const { t } = useI18n();
   // reuse Archive's aces view inside an overlay
   return (
     <div className="screen">
-      <div className="top"><h1>Your aces</h1><button className="iconbtn" onClick={onClose} aria-label="Close"><Icon n="close" size={20} /></button></div>
+      <div className="top"><h1>{t('Your aces')}</h1><button className="iconbtn" onClick={onClose} aria-label={t('Close')}><Icon n="close" size={20} /></button></div>
       <Aces open={open} />
     </div>
   );

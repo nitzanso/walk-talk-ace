@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db, useQuery } from './db.js';
-import { LIGHTS, TOOLS, ALLOWED_EXAMPLES } from './content.js';
+import { useI18n } from './i18n.jsx';
 import { Seg, Helpful, Icon } from './ui.jsx';
 
 function Item({ title, children, kind, id }) {
@@ -14,6 +14,8 @@ function Item({ title, children, kind, id }) {
 }
 
 function Mine() {
+  const { t, C } = useI18n();
+  const { LIGHTS, TOOLS, ALLOWED_EXAMPLES } = C;
   const fbs = useQuery(() => db.settings.where('key').startsWith('fb:').toArray(), [], []);
   const allowed = useQuery(() => db.allowed.toArray(), [], []);
   const [txt, setTxt] = useState('');
@@ -21,7 +23,7 @@ function Mine() {
   const answers = useQuery(() => db.answers.toArray(), [], []);
   const good = fbs.filter((f) => f.value === 'helped');
   const title = (k) => { const [, kind, id] = k.split(':'); return ((kind === 'light' ? LIGHTS : TOOLS).find((x) => x.id === id) || {}).title || id; };
-  const best = ['fills', 'myself'].flatMap((q) => (answers.find((a) => a.qid === q) || {}).value || []).filter((v) => v !== 'Not sure');
+  const best = ['fills', 'myself'].flatMap((q) => (answers.find((a) => a.qid === q) || {}).value || []).filter((v) => v !== 'Not sure' && v !== t('Not sure'));
   const add = async (v) => {
     const t = v.trim(); if (!t) return;
     if (/self.?harm|hurt myself|starv|purge|not eat|להרעיב|לפגוע בעצמי/i.test(t)) { setWarn(true); return; }
@@ -31,44 +33,46 @@ function Mine() {
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div className="card"><h3>Things that helped me</h3>{good.length ? <div className="wrapchips">{good.map((f) => <span className="tag" key={f.key}>{title(f.key)}</span>)}</div> : <p className="small">Tap “This helped” on a card and it lands here.</p>}</div>
+      <div className="card"><h3>{t('Things that helped me')}</h3>{good.length ? <div className="wrapchips">{good.map((f) => <span className="tag" key={f.key}>{title(f.key)}</span>)}</div> : <p className="small">{t('Tap “This helped” on a card and it lands here.')}</p>}</div>
       <div className="card">
-        <h3>Things I'm not judging myself for</h3>
-        <p className="small">In hard times, some things are just ok. Add yours.</p>
+        <h3>{t("Things I'm not judging myself for")}</h3>
+        <p className="small">{t('In hard times, some things are just ok. Add yours.')}</p>
         <div className="wrapchips">
-          {allowed.map((a) => <button key={a.id} className="tag sel" onClick={() => db.allowed.delete(a.id)} aria-label={`Remove ${a.text}`}>{a.text} ×</button>)}
+          {allowed.map((a) => <button key={a.id} className="tag sel" onClick={() => db.allowed.delete(a.id)} aria-label={`${t('Remove')} ${a.text}`}>{a.text} ×</button>)}
           {ALLOWED_EXAMPLES.filter((e) => !allowed.some((a) => a.text === e)).map((e) => <button key={e} className="tag" onClick={() => add(e)}>+ {e}</button>)}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <input value={txt} onChange={(e) => setTxt(e.target.value)} placeholder="Add your own" dir="auto" aria-label="Add your own" style={{ flex: 1, minWidth: 0, height: 48, borderRadius: 24, border: 0, padding: '0 16px', fontSize: 16, background: '#fff' }} />
-          <button className="iconbtn" onClick={() => add(txt)} aria-label="Add"><Icon n="plus" size={20} /></button>
+          <input value={txt} onChange={(e) => setTxt(e.target.value)} placeholder={t('Add your own')} dir="auto" aria-label={t('Add your own')} style={{ flex: 1, minWidth: 0, height: 48, borderRadius: 24, border: 0, padding: '0 16px', fontSize: 16, background: '#fff' }} />
+          <button className="iconbtn" onClick={() => add(txt)} aria-label={t('Add')}><Icon n="plus" size={20} /></button>
         </div>
-        {warn && <p className="small">That one is something to talk about with a person, not to put on this list. The Support page in More has people to call.</p>}
+        {warn && <p className="small">{t('That one is something to talk about with a person, not to put on this list. The Support page in More has people to call.')}</p>}
       </div>
       <div className="card">
-        <h3>Me at my best</h3>
-        {best.length ? <div className="wrapchips">{best.map((b) => <span className="tag" key={b}>{b}</span>)}</div> : <p className="small">Answer the tiny questions on Today and the things that fill you up collect here.</p>}
+        <h3>{t('Me at my best')}</h3>
+        {best.length ? <div className="wrapchips">{best.map((b) => <span className="tag" key={b}>{b}</span>)}</div> : <p className="small">{t('Answer the tiny questions on Today and the things that fill you up collect here.')}</p>}
       </div>
     </div>
   );
 }
 
 export default function Library() {
+  const { t, C } = useI18n();
+  const { LIGHTS, TOOLS } = C;
   const [seg, setSeg] = useState('lights');
   return (
     <div className="screen">
-      <h1>Library</h1>
-      <Seg value={seg} onChange={setSeg} items={[['lights', 'Little lights'], ['tools', 'Try this'], ['mine', 'Mine']]} />
+      <h1>{t('Library')}</h1>
+      <Seg value={seg} onChange={setSeg} items={[['lights', t('Little lights')], ['tools', t('Try this')], ['mine', t('Mine')]]} />
       {seg === 'lights' && LIGHTS.map((l) => (
         <Item key={l.id} title={l.title} kind="light" id={l.id}>
-          <p><b>What research found.</b> {l.finding}</p><p><b>For you.</b> {l.forYou}</p><p><b>Try it.</b> {l.tryIt}</p><p className="small">{l.caveat}</p>
+          <p><b>{t('What research found.')}</b> {l.finding}</p><p><b>{t('For you.')}</b> {l.forYou}</p><p><b>{t('Try it.')}</b> {l.tryIt}</p><p className="small">{l.caveat}</p>
         </Item>
       ))}
-      {seg === 'tools' && TOOLS.map((t) => (
-        <Item key={t.id} title={t.title} kind="tool" id={t.id}>
-          <p><b>Why.</b> {t.why}</p>
-          <ol style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>{t.steps.map((s) => <li key={s}>{s}</li>)}</ol>
-          <p className="small">For example: {t.example}</p>
+      {seg === 'tools' && TOOLS.map((tl) => (
+        <Item key={tl.id} title={tl.title} kind="tool" id={tl.id}>
+          <p><b>{t('Why.')}</b> {tl.why}</p>
+          <ol style={{ paddingInlineStart: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>{tl.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+          <p className="small">{t('For example:')} {tl.example}</p>
         </Item>
       ))}
       {seg === 'mine' && <Mine />}

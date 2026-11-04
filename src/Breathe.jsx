@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { db } from './db.js';
 import { Icon } from './ui.jsx';
+import { useI18n } from './i18n.jsx';
 
 // Patterns in seconds: [in, hold, out, hold]. Not a medical claim: slow breathing with a longer out-breath helps many people feel calmer.
 const PATTERNS = {
@@ -12,29 +13,30 @@ const NAMES = ['Breathe in, into your belly', 'Hold gently', 'Out slowly, throug
 const TOTAL = 90;
 
 export default function Breathe({ onClose }) {
+  const { t } = useI18n();
   const [pat, setPat] = useState('steady');
   const [running, setRunning] = useState(false);
   const [phase, setPhase] = useState(0);
   const [count, setCount] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [done, setDone] = useState(false);
-  const t = useRef({});
+  const tm = useRef({});
 
-  useEffect(() => () => clearInterval(t.current.iv), []);
+  useEffect(() => () => clearInterval(tm.current.iv), []);
 
   const start = () => {
     const p = PATTERNS[pat].p;
     let ph = 0; let left = p[0]; let el = 0;
     setPhase(0); setCount(left); setElapsed(0); setDone(false); setRunning(true);
     if (navigator.vibrate) navigator.vibrate(10);
-    t.current.iv = setInterval(() => {
+    tm.current.iv = setInterval(() => {
       el += 1; left -= 1; setElapsed(el);
-      if (el >= TOTAL) { clearInterval(t.current.iv); setRunning(false); setDone(true); db.entries.add({ created: Date.now(), kind: 'breathe' }).catch(() => {}); return; }
+      if (el >= TOTAL) { clearInterval(tm.current.iv); setRunning(false); setDone(true); db.entries.add({ created: Date.now(), kind: 'breathe' }).catch(() => {}); return; }
       if (left <= 0) { ph = (ph + 1) % 4; left = p[ph]; setPhase(ph); if (navigator.vibrate && (ph === 0 || ph === 2)) navigator.vibrate(8); }
       setCount(left);
     }, 1000);
   };
-  const stop = () => { clearInterval(t.current.iv); setRunning(false); setDone(false); setElapsed(0); setPhase(0); };
+  const stop = () => { clearInterval(tm.current.iv); setRunning(false); setDone(false); setElapsed(0); setPhase(0); };
 
   // size by phase: expand during in, stay large during hold, shrink during out, stay small during rest
   const p = PATTERNS[pat].p;
@@ -44,24 +46,24 @@ export default function Breathe({ onClose }) {
   return (
     <div className="screen">
       <div className="top">
-        <h1>Breathe</h1>
-        <button className="iconbtn" onClick={() => { stop(); onClose(); }} aria-label="Close"><Icon n="close" size={20} /></button>
+        <h1>{t('Breathe')}</h1>
+        <button className="iconbtn" onClick={() => { stop(); onClose(); }} aria-label={t('Close')}><Icon n="close" size={20} /></button>
       </div>
-      <p className="small">One and a half minutes. Put a hand on your belly and let it rise on the way in.</p>
+      <p className="small">{t('One and a half minutes. Put a hand on your belly and let it rise on the way in.')}</p>
       <div className="grow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300, position: 'relative' }}>
         <motion.div style={{ position: 'absolute', width: 170, height: 170, borderRadius: '50%', background: '#CFE3D6', opacity: 0.5 }} animate={{ scale: target * 1.18 }} transition={{ duration: dur, ease: 'easeInOut' }} />
         <motion.div style={{ width: 170, height: 170, borderRadius: '50%', background: 'var(--lav)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--display)', fontSize: 44 }} animate={{ scale: target }} transition={{ duration: dur, ease: 'easeInOut' }}>
           {running ? count : done ? '✓' : ''}
         </motion.div>
       </div>
-      <h2 className="center" aria-live="polite" style={{ minHeight: 30 }}>{running ? NAMES[phase] : done ? 'Well done. That counts.' : 'Ready when you are'}</h2>
+      <h2 className="center" aria-live="polite" style={{ minHeight: 30 }}>{running ? t(NAMES[phase]) : done ? t('Well done. That counts.') : t('Ready when you are')}</h2>
       {!running && (
-        <div className="pills" role="group" aria-label="Pattern">
-          {Object.entries(PATTERNS).map(([k, v]) => <button key={k} className={'pill' + (pat === k ? ' on' : '')} onClick={() => setPat(k)} style={{ fontSize: 13 }}>{v.label}</button>)}
+        <div className="pills" role="group" aria-label={t('Pattern')}>
+          {Object.entries(PATTERNS).map(([k, v]) => <button key={k} className={'pill' + (pat === k ? ' on' : '')} onClick={() => setPat(k)} style={{ fontSize: 13 }}>{t(v.label)}</button>)}
         </div>
       )}
-      {running ? <button className="btn alt" onClick={stop}>Stop</button> : <button className="btn" onClick={start}>{done ? 'Again' : 'Start'}</button>}
-      <p className="small center">If you feel dizzy, breathe normally. This is not medical advice.</p>
+      {running ? <button className="btn alt" onClick={stop}>{t('Stop')}</button> : <button className="btn" onClick={start}>{done ? t('Again') : t('Start')}</button>}
+      <p className="small center">{t('If you feel dizzy, breathe normally. This is not medical advice.')}</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useSetting } from './db.js';
+import { useI18n } from './i18n.jsx';
 
 export function Overlay({ children }) {
   return (
@@ -22,11 +23,12 @@ export function Seg({ value, onChange, items }) {
 
 // "This helped" / "Not for me": both answers are equal, so the app learns what does and doesn't fit.
 export function Helpful({ kind, id }) {
+  const { t } = useI18n();
   const [v, set] = useSetting(`fb:${kind}:${id}`, null);
   return (
     <div className="fb">
-      <button className={v === 'helped' ? 'on' : ''} aria-pressed={v === 'helped'} onClick={() => set(v === 'helped' ? null : 'helped')}>This helped</button>
-      <button className={v === 'no' ? 'on' : ''} aria-pressed={v === 'no'} onClick={() => set(v === 'no' ? null : 'no')}>Not for me</button>
+      <button className={v === 'helped' ? 'on' : ''} aria-pressed={v === 'helped'} onClick={() => set(v === 'helped' ? null : 'helped')}>{t('This helped')}</button>
+      <button className={v === 'no' ? 'on' : ''} aria-pressed={v === 'no'} onClick={() => set(v === 'no' ? null : 'no')}>{t('Not for me')}</button>
     </div>
   );
 }

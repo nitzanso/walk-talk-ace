@@ -10,7 +10,7 @@ export function speechMessage(code) {
   if (code === 'network') return 'Live words needs an internet connection. Check your signal and try again.';
   if (code === 'audio-capture') return "Live words can't reach the microphone. Close other apps that use it.";
   if (code === 'language-not-supported') return "This phone's speech service doesn't support that language for live words.";
-  return 'Live words stopped (' + code + ').';
+  return 'Live words stopped.';
 }
 export function dictationSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
 

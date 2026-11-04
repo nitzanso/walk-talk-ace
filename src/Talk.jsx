@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { addEvent, addRun } from './report.js';
 import { db, useSetting } from './db.js';
-import { CRISIS_RE } from './content.js';
+import { useI18n } from './i18n.jsx';
 import { Icon } from './ui.jsx';
 import { micPermission, startDictation, dictationSupported, micMessage } from './speech.js';
 
@@ -21,6 +21,7 @@ function HoldButton({ onComplete, label }) {
 }
 
 export default function Talk({ onDone, onReflect, onCrisis }) {
+  const { t, C } = useI18n();
   const [lang, setLang] = useSetting('lang', 'he-IL');
   const [method, setMethod] = useState('live'); // live | record
   const [phase, setPhase] = useState('ready'); // ready | going | result
@@ -88,7 +89,7 @@ export default function Talk({ onDone, onReflect, onCrisis }) {
     } catch (e) {
       addRun(`${chosen} ${lang}: FAILED ${e.name} ${e.message}`);
       cleanup();
-      setResult({ error: e.name === 'NotAllowedError' ? micMessage(e.name) : `The recording did not start (${e.name}).`, code: e.name });
+      setResult({ error: e.name === 'NotAllowedError' ? micMessage(e.name) : t('The recording did not start ({n}).', { n: e.name }), code: e.name });
       setPhase('result');
     }
   }
@@ -122,20 +123,20 @@ export default function Talk({ onDone, onReflect, onCrisis }) {
   return (
     <div className="screen">
       <div className="top">
-        <div><span className="eyebrow">Walk and talk</span><h1>Say it out loud</h1></div>
-        <button className="iconbtn" onClick={close} aria-label="Close"><Icon n="close" size={20} /></button>
+        <div><span className="eyebrow">{t('Walk and talk')}</span><h1>{t('Say it out loud')}</h1></div>
+        <button className="iconbtn" onClick={close} aria-label={t('Close')}><Icon n="close" size={20} /></button>
       </div>
 
       {phase === 'ready' && (
         <>
-          <p>Say whatever is on your mind. There's no right way. Keep the screen on and hold the phone however you normally do on a walk.</p>
+          <p>{t("Say whatever is on your mind. There's no right way. Keep the screen on and hold the phone however you normally do on a walk.")}</p>
           <div className="pills" role="group" aria-label="Language">
             <button className={'pill' + (lang === 'he-IL' ? ' on' : '')} onClick={() => setLang('he-IL')}>עברית</button>
             <button className={'pill' + (lang === 'en-US' ? ' on' : '')} onClick={() => setLang('en-US')}>English</button>
           </div>
           <div className="grow" />
-          <button className="btn" onClick={() => start('live')}><Icon n="mic" color="#fff" size={24} />Start talking</button>
-          <button className="link" onClick={() => start('record')}>Record the sound only (no text)</button>
+          <button className="btn" onClick={() => start('live')}><Icon n="mic" color="#fff" size={24} />{t('Start talking')}</button>
+          <button className="link" onClick={() => start('record')}>{t('Record the sound only (no text)')}</button>
         </>
       )}
 
@@ -147,36 +148,36 @@ export default function Talk({ onDone, onReflect, onCrisis }) {
           <h2 className="center">{Math.floor(secs / 60)}:{String(secs % 60).padStart(2, '0')}</h2>
           {problem && (
             <div className="card" style={{ background: '#FFF3CF' }} role="alert">
-              <p>{problem.message}</p>
-              {problem.fatal && <button className="btn soft" onClick={() => start('record')}>Record the sound instead</button>}
+              <p>{t(problem.message)}</p>
+              {problem.fatal && <button className="btn soft" onClick={() => start('record')}>{t('Record the sound instead')}</button>}
             </div>
           )}
           {method === 'live' ? (
             <div className="card" dir="auto" style={{ minHeight: 120 }}>
-              <p>{live || (problem ? '' : heard ? 'Listening… start talking.' : 'Starting the microphone…')}</p>
-              {!live && secs > 12 && !problem && <p className="small">Nothing heard yet. Move the phone closer to your mouth, or check that live words is working in this language.</p>}
+              <p>{live || (problem ? '' : heard ? t('Listening… start talking.') : t('Starting the microphone…'))}</p>
+              {!live && secs > 12 && !problem && <p className="small">{t('Nothing heard yet. Move the phone closer to your mouth, or check that live words is working in this language.')}</p>}
             </div>
-          ) : <p className="small center">Recording sound only. It plays back afterwards but isn't turned into text yet.</p>}
+          ) : <p className="small center">{t("Recording sound only. It plays back afterwards but isn't turned into text yet.")}</p>}
           <div className="grow" />
-          <HoldButton label="Hold to stop" onComplete={stop} />
+          <HoldButton label={t('Hold to stop')} onComplete={stop} />
         </>
       )}
 
       {phase === 'result' && (
         <>
-          {result?.error && <div className="card" style={{ background: '#FFF3CF' }} role="alert"><p>{result.error}</p></div>}
-          {result?.text !== undefined && <div className="card" dir="auto"><p>{result.text || 'Nothing was heard this time.'}</p></div>}
+          {result?.error && <div className="card" style={{ background: '#FFF3CF' }} role="alert"><p>{t(result.error)}</p></div>}
+          {result?.text !== undefined && <div className="card" dir="auto"><p>{result.text || t('Nothing was heard this time.')}</p></div>}
           {result?.url && (
             <div className="card">
-              <p>Recorded. Play it back:</p>
+              <p>{t('Recorded. Play it back:')}</p>
               <audio src={result.url} controls style={{ width: '100%' }} />
-              <p className="small">Turning sound into text isn't switched on yet, so this can't be reflected on for now.</p>
+              <p className="small">{t("Turning sound into text isn't switched on yet, so this can't be reflected on for now.")}</p>
             </div>
           )}
           <div className="grow" />
-          {result?.text && <button className="btn" onClick={() => (CRISIS_RE.test(result.text) ? onCrisis() : onReflect(result.text))}>Get my reflection</button>}
-          <button className="btn alt" onClick={() => start(method)}>{result?.error ? 'Try again' : 'Talk again'}</button>
-          <button className="link" onClick={close}>Done for now</button>
+          {result?.text && <button className="btn" onClick={() => (C.CRISIS_RE.test(result.text) ? onCrisis() : onReflect(result.text))}>{t('Get my reflection')}</button>}
+          <button className="btn alt" onClick={() => start(method)}>{result?.error ? t('Try again') : t('Talk again')}</button>
+          <button className="link" onClick={close}>{t('Done for now')}</button>
         </>
       )}
     </div>
