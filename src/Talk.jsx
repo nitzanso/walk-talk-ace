@@ -30,6 +30,8 @@ export default function Talk({ onDone, onReflect, onCrisis }) {
   const [heard, setHeard] = useState(false);
   const [problem, setProblem] = useState(null); // {message, fatal}
   const [result, setResult] = useState(null);
+  const [gone, setGone] = useState(false);
+  const discard = async () => { const s = st.current; if (s.entryId) await db.entries.delete(s.entryId); s.entryId = null; setGone(true); };
   const st = useRef({});
 
   useEffect(() => () => cleanup(), []);
@@ -55,7 +57,7 @@ export default function Talk({ onDone, onReflect, onCrisis }) {
     const s = st.current;
     cleanup();
     Object.assign(s, { started: Date.now(), events: [], chunks: [], method: chosen });
-    setMethod(chosen); setLive(''); setSecs(0); setHeard(false); setProblem(null); setResult(null);
+    setMethod(chosen); setLive(''); setSecs(0); setHeard(false); setProblem(null); setResult(null); setGone(false);
     addEvent(`start ${chosen} ${lang}`);
 
     const perm = await micPermission();
@@ -101,7 +103,7 @@ export default function Talk({ onDone, onReflect, onCrisis }) {
     const finish = (extra, res) => {
       addRun(`${s.method} ${lang}: ${common}\n${extra}`);
       setResult(res); setPhase('result');
-      db.entries.add({ created: Date.now(), kind: 'talk', seconds: dur, text: res.text || undefined, audio: !!res.url }).catch(() => {});
+      db.entries.add({ created: Date.now(), kind: 'talk', seconds: dur, text: res.text || undefined, audio: !!res.url }).then((id) => { st.current.entryId = id; }).catch(() => {});
     };
     if (s.method === 'live') {
       const text = (s.dict ? s.dict.stop() : '') || live;
@@ -175,8 +177,10 @@ export default function Talk({ onDone, onReflect, onCrisis }) {
             </div>
           )}
           <div className="grow" />
-          {result?.text && <button className="btn" onClick={() => (C.CRISIS_RE.test(result.text) ? onCrisis() : onReflect(result.text))}>{t('Get my reflection')}</button>}
+          {gone && <p className="small center">{t('Deleted. Nothing was kept.')}</p>}
+          {result?.text && !gone && <button className="btn" onClick={() => (C.CRISIS_RE.test(result.text) ? onCrisis() : onReflect(result.text))}>{t('Get my reflection')}</button>}
           <button className="btn alt" onClick={() => start(method)}>{result?.error ? t('Try again') : t('Talk again')}</button>
+          {!gone && !result?.error && <button className="link" onClick={discard}>{t('Delete this recording')}</button>}
           <button className="link" onClick={close}>{t('Done for now')}</button>
         </>
       )}

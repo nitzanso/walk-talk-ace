@@ -9,6 +9,8 @@ export default function EntryDetail({ id, onClose, open }) {
   const e = useQuery(() => db.entries.get(id), [id], null);
   const themes = useQuery(() => db.insights.where('kind').equals('theme').toArray(), [], []);
   const [tab, setTab] = useState('words');
+  const [sure, setSure] = useState(false);
+  const erase = async () => { const txt = (await db.entries.get(id) || {}).text; await db.entries.delete(id); if (txt) { const rs = await db.reflections.toArray(); await Promise.all(rs.filter((x) => x.text === txt).map((x) => db.reflections.delete(x.id))); } onClose(); };
   if (!e) return <div className="screen" />;
   const r = e.reflection;
   const mine = themes.filter((th) => (e.themes || []).includes(th.slug));
@@ -36,6 +38,9 @@ export default function EntryDetail({ id, onClose, open }) {
           <Helpful kind="entry" id={String(e.id)} />
         </div>
       ) : <div className="card"><p>{t('Nothing to try for this one. Sometimes saying it is the whole job.')}</p></div>)}
+      {!sure ? <button className="link" onClick={() => setSure(true)}>{t('Delete this recording')}</button> : (
+        <div className="card"><p>{t('Delete this recording and its reflection? This cannot be undone.')}</p>
+          <div className="fb"><button onClick={() => setSure(false)}>{t('Keep it')}</button><button className="on" onClick={erase}>{t('Delete')}</button></div></div>)}
       <div style={{ height: 8 }} />
     </div>
   );

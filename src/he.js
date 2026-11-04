@@ -379,5 +379,10 @@ const HE = {
   "What I heard": "מה ששמעתי",
   "What may be underneath": "מה שאולי מתחת",
   "What you are carrying, and doing well": "מה שאת נושאת, ומה שאת עושה טוב",
+  "Delete this recording": "מחיקת ההקלטה",
+  "Deleted. Nothing was kept.": "נמחק. שום דבר לא נשמר.",
+  "Delete this recording and its reflection? This cannot be undone.": "למחוק את ההקלטה ואת ההתבוננות שלה? אי אפשר לבטל.",
+  "Keep it": "להשאיר",
+  "Delete": "מחיקה",
 };
 export default HE;

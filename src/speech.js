@@ -24,6 +24,21 @@ export async function micPermission() {
   } catch (e) { return { ok: false, code: e.name, message: micMessage(e.name) }; }
 }
 
+const lc = (x) => x.toLowerCase().replace(/[.,!?]/g, '').trim();
+// Joins pieces of speech, skipping a piece when the next one starts with it or contains it (a repeat).
+export function joinSegs(segs) {
+  const parts = (segs || []).filter((x) => x && x.t);
+  const out = [];
+  parts.forEach((x, i) => {
+    const nxt = parts[i + 1];
+    if (nxt && lc(nxt.t).includes(lc(x.t))) return;
+    const prev = out[out.length - 1];
+    if (prev && (lc(prev).endsWith(lc(x.t)) || lc(prev) === lc(x.t))) return;
+    out.push(x.t);
+  });
+  return out.join(' ').trim();
+}
+
 // Live captions. onText gets the whole text so far. onError gets {code,message,fatal}. Returns { stop, text }.
 export function startDictation({ lang, onText, onError, onAudio }) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -32,13 +47,11 @@ export function startDictation({ lang, onText, onError, onAudio }) {
     const rec = new SR();
     rec.lang = lang; rec.continuous = true; rec.interimResults = true;
     rec.onaudiostart = () => onAudio && onAudio();
+    h.segs = [];
     rec.onresult = (e) => {
-      let interim = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const r = e.results[i];
-        if (r.isFinal) h.final += r[0].transcript + ' '; else interim += r[0].transcript;
-      }
-      onText((h.final + interim).trim());
+      // Android Chrome re-sends the whole sentence so far as a new "final" result. Rebuild from this session's results by index and drop any piece that the next piece repeats.
+      for (let i = e.resultIndex; i < e.results.length; i++) h.segs[i] = { t: e.results[i][0].transcript.trim(), f: e.results[i].isFinal };
+      onText(h.final.concat(' ', joinSegs(h.segs)).trim());
     };
     rec.onerror = (e) => {
       if (e.error === 'no-speech' || e.error === 'aborted') return;
@@ -47,13 +60,13 @@ export function startDictation({ lang, onText, onError, onAudio }) {
       if (fatal) h.stopped = true;
       onError({ code: e.error, message: speechMessage(e.error), fatal });
     };
-    rec.onend = () => { if (!h.stopped) setTimeout(() => { if (!h.stopped) { try { begin(); } catch {} } }, 250); };
+    rec.onend = () => { h.final = (h.final + ' ' + joinSegs(h.segs)).trim(); h.segs = []; if (!h.stopped) setTimeout(() => { if (!h.stopped) { try { begin(); } catch {} } }, 250); };
     h.rec = rec;
     try { rec.start(); } catch (e) { h.stopped = true; onError({ code: e.name, message: speechMessage(e.name), fatal: true }); }
   };
   begin();
   return {
-    stop() { h.stopped = true; try { h.rec && h.rec.stop(); } catch {} return (h.final).trim(); },
-    text() { return h.final.trim(); },
+    stop() { h.stopped = true; try { h.rec && h.rec.stop(); } catch {} return (h.final + ' ' + joinSegs(h.segs)).trim(); },
+    text() { return (h.final + ' ' + joinSegs(h.segs)).trim(); },
   };
 }
