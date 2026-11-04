@@ -101,7 +101,7 @@ export const TOOLS = [
     id: 'know-guess', title: 'What I know and what I\'m guessing', for: ['thoughts'], low: false,
     why: 'The guesses are what keep you up at night. Hearing them next to the facts shows you which is which.',
     steps: ['Say one thing you actually know.', 'Say one thing you are guessing.'],
-    example: 'Know: "He hasn\'t written, and he told me he made up his mind." Guess: "He\'s avoiding me because he can\'t face it."',
+    example: 'Know: "The results come on Thursday." Guess: "They will be bad."',
   },
   {
     id: 'evidence', title: 'Is the whole picture true?', for: ['thoughts'], low: false,
@@ -113,13 +113,13 @@ export const TOOLS = [
     id: 'worst-best-likely', title: 'Worst, best, most likely, then a kind plan', for: ['thoughts'], low: false,
     why: 'Worry keeps its force by staying vague. Saying the whole chain out loud, then the likely version, then one gentle plan, makes it smaller.',
     steps: ['Say the worst case, all the way to the end.', 'Say the best case, as vividly as the worst.', 'Say what will most likely happen, including that you will feel sad.', 'Choose one kind thing to do if that happens.'],
-    example: 'Worry: "the day we stop talking." Likely: "I\'ll feel sad and want to write him." Plan: "I\'ll walk for ten minutes and then call a friend."',
+    example: 'Worry: "the meeting on Monday." Likely: "I\'ll be nervous and stumble over a few words." Plan: "I\'ll breathe slowly before it and keep water next to me."',
   },
   {
     id: 'if-then', title: 'When the pull comes, one small thing first', for: ['urge'], low: true,
     why: 'An urge is a wave. You don\'t have to fight it or be perfect about it, only put one small thing in front of it.',
     steps: ['Name the pull: "I want to ___."', 'Say it\'s allowed to be there. Whatever you choose is yours.', 'Before you decide, do one small thing for ten minutes.'],
-    example: '"I want to text him. I\'ll water the plants and drink a glass of water first, then I\'ll see how I feel."',
+    example: '"I want to check my phone again. I\'ll water the plants and drink a glass of water first, then I\'ll see how I feel."',
   },
   {
     id: 'company-near', title: 'Be near people, no talking needed', for: ['empty', 'heavy'], low: true,
