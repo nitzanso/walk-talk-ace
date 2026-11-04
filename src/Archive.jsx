@@ -14,7 +14,7 @@ function Timeline({ open }) {
     const [c, e, r, a] = await Promise.all([db.checks.toArray(), db.entries.toArray(), db.reflections.toArray(), db.aces.toArray()]);
     return [
       ...c.map((x) => ({ t: x.created, k: 'check', title: t('Today felt {m}', { m: MOODN[x.mood] || x.mood }), mood: x.mood })),
-      ...e.map((x) => ({ t: x.created, k: 'entry', id: x.id, hasText: !!x.text, title: (he && x.titleHe) || x.title || (x.kind === 'breathe' ? t('Breathing, 90 seconds') : x.kind === 'talk' ? t('Walk and talk') + (x.seconds ? ', ' + Math.round(x.seconds / 60 * 10) / 10 + ' ' + t('min') : '') : x.kind === 'type' ? t('Wrote something') : t('Entry')), sub: x.text })),
+      ...e.map((x) => ({ t: x.created, k: 'entry', id: x.id, hasText: true, title: (he && x.titleHe) || x.title || (x.kind === 'breathe' ? t('Breathing, 90 seconds') : x.kind === 'talk' ? t('Walk and talk') + (x.seconds ? ', ' + Math.round(x.seconds / 60 * 10) / 10 + ' ' + t('min') : '') : x.kind === 'type' ? t('Wrote something') : t('Entry')), sub: x.text })),
       ...r.map((x) => ({ t: x.created, k: 'refl', title: x.sample ? t('Reflection (sample)') : t('Reflection'), sub: x.reflection && x.reflection.process, fb: x.feedback })),
       ...a.map((x) => ({ t: x.created, k: 'ace', title: x.kind === 'small' ? t('Small ace') : t('Big ace'), sub: x.text })),
     ].sort((p, q) => q.t - p.t);
@@ -23,7 +23,7 @@ function Timeline({ open }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {data.map((x, i) => (
-        <div key={i} className="tl-item" role={x.hasText ? 'button' : undefined} tabIndex={x.hasText ? 0 : undefined} onClick={x.hasText ? () => open('entry', { id: x.id }) : undefined} style={x.hasText ? { cursor: 'pointer' } : undefined}>
+        <div key={i} className="tl-item" role={x.hasText ? 'button' : undefined} tabIndex={x.hasText ? 0 : undefined} onClick={x.hasText ? () => open('entry', { id: x.id }) : undefined} onKeyDown={x.hasText ? (e) => { if (e.key === 'Enter') open('entry', { id: x.id }); } : undefined} style={x.hasText ? { cursor: 'pointer' } : undefined}>
           {x.mood ? <Blob mood={x.mood} size={40} /> : <Icon n={x.k === 'ace' ? 'sun' : x.k === 'refl' ? 'book' : 'path'} />}
           <div style={{ minWidth: 0 }}>
             <div className="small">{when(x.t, lang)}</div>
@@ -31,6 +31,7 @@ function Timeline({ open }) {
             {x.sub && !x.hasText && <div className="small" dir="auto" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{x.sub}</div>}
             {x.fb && <div className="small">{t('You said:')} {x.fb === 'true' ? t('True').toLowerCase() : x.fb === 'notquite' ? t('Not quite').toLowerCase() : t('Missed it').toLowerCase()}</div>}
           </div>
+          {x.hasText && <span style={{ marginInlineStart: 'auto', opacity: 0.5, transform: 'rotate(-90deg)' }} className="rtlflip"><Icon n="chev" size={18} /></span>}
         </div>
       ))}
     </div>

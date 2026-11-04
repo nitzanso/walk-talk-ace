@@ -19,7 +19,7 @@ export default function EntryDetail({ id, onClose, open }) {
         <button className="iconbtn" onClick={onClose} aria-label={t('Close')}><Icon n="close" size={20} /></button>
       </div>
       <Seg value={tab} onChange={setTab} items={[['words', t('What you said')], ['refl', t('Reflection')], ['themes', t('Themes')], ['next', t('Try next')]]} />
-      {tab === 'words' && <div className="card"><p dir="auto" style={{ whiteSpace: 'pre-wrap' }}>{e.text}</p></div>}
+      {tab === 'words' && <div className="card"><p dir="auto" style={{ whiteSpace: 'pre-wrap' }}>{e.text || t('No text was saved for this one.')}</p></div>}
       {tab === 'refl' && (r ? (
         <>
           <div className="card"><h3 style={{ color: '#1F6B67' }}>{t('A read of your process')}</h3><p>{r.process}</p></div>

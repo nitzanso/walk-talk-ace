@@ -299,5 +299,6 @@ const HE = {
 "This phone's speech service doesn't support that language for live words.": "שירות הדיבור של הטלפון לא תומך בשפה הזו עבור מילים חיות.",
 "Live words stopped.": "המילים החיות נעצרו.",
 "Live words isn't available in this browser. Recording audio instead is possible.": "המילים החיות לא זמינות בדפדפן הזה. אפשר להקליט קול במקום.",
+  "No text was saved for this one.": "לא נשמר טקסט להקלטה הזו.",
 };
 export default HE;
