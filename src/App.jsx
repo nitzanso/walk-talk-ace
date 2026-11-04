@@ -17,7 +17,7 @@ import Support from './Support.jsx';
 import EntryDetail from './EntryDetail.jsx';
 import { I18n, useI18n } from './i18n.jsx';
 
-const TABS = [['today', 'Today', 'sun'], ['archive', 'Archive', 'path'], null, ['library', 'Library', 'book'], ['more', 'More', 'user']];
+const TABS = [['today', 'Today', 'sun'], ['archive', 'Archive', 'path'], null, ['more', 'More', 'user']];
 
 export default function App() { return <I18n><Shell /></I18n>; }
 
@@ -28,7 +28,7 @@ function Shell() {
   const [tab, setTab] = useState('today');
   const [ov, setOv] = useState(null); // {name, text}
   const open = (name, extra = {}) => {
-    if (['today', 'archive', 'library', 'more'].includes(name)) { setTab(name); setOv(null); return; }
+    if (['today', 'archive', 'more'].includes(name)) { setTab(name); setOv(null); return; }
     setOv({ name, ...extra });
   };
   const close = () => setOv(null);
@@ -45,13 +45,13 @@ function Shell() {
       <div className="view">
         {tab === 'today' && <Today open={open} />}
         {tab === 'archive' && <Archive open={open} />}
-        {tab === 'library' && <Library />}
         {tab === 'more' && <More open={open} />}
         <AnimatePresence>
           {ov && (
             <Overlay key={ov.name}>
               {ov.name === 'talk' && <Talk onDone={close} onReflect={reflect} onCrisis={crisis} />}
               {ov.name === 'type' && <Type onDone={close} onReflect={reflect} onCrisis={crisis} />}
+              {ov.name === 'library' && <Library onClose={close} />}
               {ov.name === 'picker' && <Picker onClose={close} open={open} />}
               {ov.name === 'breathe' && <Breathe onClose={close} />}
               {ov.name === 'ace' && <AceFlow onClose={close} />}

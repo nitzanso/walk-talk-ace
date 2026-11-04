@@ -64,13 +64,13 @@ function Mine() {
   );
 }
 
-export default function Library() {
+export default function Library({ onClose }) {
   const { t, C } = useI18n();
   const { LIGHTS, TOOLS } = C;
   const [seg, setSeg] = useState('lights');
   return (
     <div className="screen">
-      <h1>{t('Library')}</h1>
+      <div className="top"><h1>{t('Library')}</h1>{onClose && <button className="iconbtn" onClick={onClose} aria-label={t('Close')}><Icon n="close" size={20} /></button>}</div>
       <Seg value={seg} onChange={setSeg} items={[['lights', t('Little lights')], ['tools', t('Try this')], ['mine', t('Mine')]]} />
       {seg === 'lights' && LIGHTS.map((l) => (
         <Item key={l.id} title={l.title} kind="light" id={l.id}>

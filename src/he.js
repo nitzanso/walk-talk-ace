@@ -330,6 +330,7 @@ const HE = {
   "A minute is plenty. It does not have to be organized.": "דקה מספיקה. לא חייבים שזה יהיה מסודר.",
   "How heavy is today?": "כמה כבד היום?",
   "Not ready to talk? Help me find one thing": "לא מוכנים לדבר? עזרו לי למצוא דבר אחד",
+  "Library: ideas and tools": "ספרייה: רעיונות וכלים",
   "No text was saved for this one.": "לא נשמר טקסט להקלטה הזו.",
 };
 export default HE;

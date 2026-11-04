@@ -25,7 +25,7 @@ p{margin:0}
 .eyebrow{font-size:13px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 
 /* tab bar */
-.tabbar{display:grid;grid-template-columns:1fr 1fr 92px 1fr 1fr;align-items:end;background:#fff;border-radius:26px 26px 0 0;
+.tabbar{display:grid;grid-template-columns:1fr 1fr 92px 1fr;align-items:end;background:#fff;border-radius:26px 26px 0 0;
   padding:8px 6px max(10px,env(safe-area-inset-bottom,0px));box-shadow:0 -8px 24px rgba(37,38,74,.09);position:relative;z-index:10}
 .tab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:var(--muted);height:56px;justify-content:center;border-radius:14px}
 .tab.on{color:var(--ink);font-weight:500}

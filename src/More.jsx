@@ -41,6 +41,7 @@ export default function More({ open }) {
         <h3>{t('How I talk to you')}</h3>
         <Seg value={tone} onChange={setTone} items={[['direct', t('Plain')], ['warm', t('Warm')]]} />
       </div>
+      <button className="btn soft" onClick={() => open('library')}>{t('Library: ideas and tools')}</button>
       <button className="btn soft" onClick={() => open('support')}>{t('Support: people to call')}</button>
       <div className="card">
         <h3>{t('My pack')}</h3>
