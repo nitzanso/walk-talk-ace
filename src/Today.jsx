@@ -37,6 +37,7 @@ export default function Today({ open }) {
   const checks = useQuery(() => db.checks.orderBy('created').reverse().limit(30).toArray(), []);
   const aceCount = useQuery(() => db.aces.count(), [], 0);
   const answers = useQuery(() => db.answers.toArray(), []);
+  const words = useQuery(() => db.insights.where('kind').equals('myword').toArray(), [], []);
   const fbs = useQuery(() => db.settings.where('key').startsWith('fb:').toArray(), []);
   const total = useQuery(async () => (await db.aces.count()) + (await db.checks.count()) + (await db.entries.count()) + (await db.toolbox.count()), [], 0);
 
@@ -88,6 +89,12 @@ export default function Today({ open }) {
       ) : (
         <div className="card"><p>{MESSAGES[tone][today.mood]}</p></div>
       )}
+      {today && today.mood === 'hard' && words.length > 0 && (() => { const w = words[Math.floor(Date.now() / 86400000) % words.length]; return (
+        <div className="card" style={{ background: '#FFF3CF' }}>
+          <span className="eyebrow">{t('From you, on a steadier day')}</span>
+          <p dir="auto" style={{ fontFamily: 'var(--display)', fontSize: 20, lineHeight: 1.35 }}>“{w.quote}”</p>
+          <p className="small">{new Date(w.created).toLocaleDateString(lang, { day: 'numeric', month: 'long' })}</p>
+        </div>); })()}
 
       <div>
         <h2 style={{ marginBottom: 10 }}>{t('What would help right now?')}</h2>

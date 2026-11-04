@@ -7,14 +7,14 @@ import { Seg, Icon } from './ui.jsx';
 const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; };
 const when = (ts, lang) => new Date(ts).toLocaleDateString(lang, { day: 'numeric', month: 'short' }) + ' · ' + new Date(ts).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
 
-function Timeline() {
-  const { t, lang } = useI18n();
+function Timeline({ open }) {
+  const { t, he, lang } = useI18n();
   const MOODN = { good: t('Good'), soso: t('So-so'), hard: t('Hard') };
   const data = useQuery(async () => {
     const [c, e, r, a] = await Promise.all([db.checks.toArray(), db.entries.toArray(), db.reflections.toArray(), db.aces.toArray()]);
     return [
       ...c.map((x) => ({ t: x.created, k: 'check', title: t('Today felt {m}', { m: MOODN[x.mood] || x.mood }), mood: x.mood })),
-      ...e.map((x) => ({ t: x.created, k: 'entry', title: x.kind === 'breathe' ? t('Breathing, 90 seconds') : x.kind === 'talk' ? t('Walk and talk') + (x.seconds ? ', ' + Math.round(x.seconds / 60 * 10) / 10 + ' ' + t('min') : '') : x.kind === 'type' ? t('Wrote something') : t('Entry'), sub: x.text })),
+      ...e.map((x) => ({ t: x.created, k: 'entry', id: x.id, hasText: !!x.text, title: (he && x.titleHe) || x.title || (x.kind === 'breathe' ? t('Breathing, 90 seconds') : x.kind === 'talk' ? t('Walk and talk') + (x.seconds ? ', ' + Math.round(x.seconds / 60 * 10) / 10 + ' ' + t('min') : '') : x.kind === 'type' ? t('Wrote something') : t('Entry')), sub: x.text })),
       ...r.map((x) => ({ t: x.created, k: 'refl', title: x.sample ? t('Reflection (sample)') : t('Reflection'), sub: x.reflection && x.reflection.process, fb: x.feedback })),
       ...a.map((x) => ({ t: x.created, k: 'ace', title: x.kind === 'small' ? t('Small ace') : t('Big ace'), sub: x.text })),
     ].sort((p, q) => q.t - p.t);
@@ -23,12 +23,12 @@ function Timeline() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {data.map((x, i) => (
-        <div key={i} className="tl-item">
+        <div key={i} className="tl-item" role={x.hasText ? 'button' : undefined} tabIndex={x.hasText ? 0 : undefined} onClick={x.hasText ? () => open('entry', { id: x.id }) : undefined} style={x.hasText ? { cursor: 'pointer' } : undefined}>
           {x.mood ? <Blob mood={x.mood} size={40} /> : <Icon n={x.k === 'ace' ? 'sun' : x.k === 'refl' ? 'book' : 'path'} />}
           <div style={{ minWidth: 0 }}>
             <div className="small">{when(x.t, lang)}</div>
             <div style={{ fontWeight: 500 }}>{x.title}</div>
-            {x.sub && <div className="small" dir="auto" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{x.sub}</div>}
+            {x.sub && !x.hasText && <div className="small" dir="auto" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{x.sub}</div>}
             {x.fb && <div className="small">{t('You said:')} {x.fb === 'true' ? t('True').toLowerCase() : x.fb === 'notquite' ? t('Not quite').toLowerCase() : t('Missed it').toLowerCase()}</div>}
           </div>
         </div>
@@ -53,7 +53,57 @@ function InsightList({ kinds, empty }) {
   ));
 }
 
-function Patterns() {
+function ThemeMap({ open }) {
+  const { t, he, lang } = useI18n();
+  const themes = useQuery(() => db.insights.where('kind').equals('theme').toArray(), [], []);
+  const entries = useQuery(async () => (await db.entries.toArray()).filter((e) => e.text).sort((a, b) => a.created - b.created), [], []);
+  const [openId, setOpenId] = useState(null);
+  if (!themes.length) return <div className="card"><p className="small">{t('After a few recordings, themes show up here with the words that point to them.')}</p></div>;
+  const groups = [...new Set(themes.map((x) => x.group))];
+  const day = (ts) => new Date(ts).toLocaleDateString(lang, { day: 'numeric', month: 'short' });
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <h3>{t('What shows up again and again')}</h3>
+      <p className="small">{t('Each dot is one recording. A filled dot means the theme was in it. These are my reading of your words, not a diagnosis.')}</p>
+      {groups.map((g) => {
+        const rows = themes.filter((x) => x.group === g).sort((a, b) => (a.order || 0) - (b.order || 0));
+        const head = rows[0];
+        return (
+          <div className="card" key={g}>
+            <span className="eyebrow">{he && head.groupHe ? head.groupHe : head.groupEn}</span>
+            {rows.map((th) => {
+              const hits = entries.filter((e) => (e.themes || []).includes(th.slug));
+              const isOpen = openId === th.slug;
+              const last = [...hits].reverse().find((e) => e.themeQuotes && e.themeQuotes[th.slug]);
+              return (
+                <div key={th.slug} style={{ borderTop: '1px solid rgba(37,38,74,.08)', paddingTop: 10 }}>
+                  <button className="lhead" style={{ padding: 0, fontSize: 17 }} onClick={() => setOpenId(isOpen ? null : th.slug)} aria-expanded={isOpen}>
+                    <span>{he && th.he ? th.he : th.en}<span className="small" style={{ display: 'block', fontFamily: 'var(--body)' }}>{t('in {a} of {b} recordings', { a: hits.length, b: entries.length })}</span></span>
+                    <Icon n="chev" />
+                  </button>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', margin: '8px 0 2px' }} aria-hidden="true">
+                    {entries.map((e) => <span key={e.id} title={day(e.created)} style={{ width: 14, height: 14, borderRadius: '50%', background: (e.themes || []).includes(th.slug) ? th.color || '#25264A' : 'transparent', border: '2px solid ' + (th.color || '#25264A'), opacity: (e.themes || []).includes(th.slug) ? 1 : 0.35 }} />)}
+                  </div>
+                  <div className="small" style={{ display: 'flex', justifyContent: 'space-between' }}><span>{entries[0] ? day(entries[0].created) : ''}</span><span>{entries.length ? day(entries[entries.length - 1].created) : ''}</span></div>
+                  {isOpen && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                      <p>{he && th.descHe ? th.descHe : th.desc}</p>
+                      {last && <p className="small" dir="auto" style={{ fontStyle: 'italic' }}>“{last.themeQuotes[th.slug]}” · {day(last.created)}</p>}
+                      {th.helps && <><b style={{ fontWeight: 500 }}>{t('What tends to help')}</b><ul style={{ paddingInlineStart: 20 }}>{(he && th.helpsHe ? th.helpsHe : th.helps).map((h) => <li key={h}>{h}</li>)}</ul></>}
+                      <div className="wrapchips">{hits.map((e) => <button key={e.id} className="tag" onClick={() => open('entry', { id: e.id })}>{day(e.created)}</button>)}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Patterns({ open }) {
   const { t, C } = useI18n();
   const { LIGHTS, TOOLS } = C;
   const checks = useQuery(() => db.checks.toArray(), [], []);
@@ -82,8 +132,7 @@ function Patterns() {
         <p>{checks.length ? `${t('Good')} ${tally.good} · ${t('So-so')} ${tally.soso} · ${t('Hard')} ${tally.hard}` : t('Check in a few days and a pattern starts to show.')}</p>
         <p className="small">{t('Days you showed up: {n}. Never a streak, nothing resets.', { n: showed.size })}</p>
       </div>
-      <h3 style={{ marginTop: 4 }}>{t('What shows up again and again')}</h3>
-      <InsightList kinds={['pattern']} empty={t('After a few recordings, patterns show up here with the words that point to them.')} />
+      <ThemeMap open={open} />
       <h3 style={{ marginTop: 4 }}>{t('What steadies you')}</h3>
       <InsightList kinds={['steadies']} />
       <div className="card">
@@ -144,8 +193,8 @@ export default function Archive({ open }) {
     <div className="screen">
       <h1>{t('Your archive')}</h1>
       <Seg value={seg} onChange={setSeg} items={[['time', t('Timeline')], ['pat', t('Patterns')], ['aces', t('Aces')], ['me', t('About me')]]} />
-      {seg === 'time' && <Timeline />}
-      {seg === 'pat' && <Patterns />}
+      {seg === 'time' && <Timeline open={open} />}
+      {seg === 'pat' && <Patterns open={open} />}
       {seg === 'aces' && <Aces open={open} />}
       {seg === 'me' && <About open={open} />}
       <div style={{ height: 8 }} />

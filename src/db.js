@@ -79,15 +79,25 @@ export async function wipeAll() {
   await Promise.all(TABLES.map((t) => db[t].clear()));
 }
 
-// Adds the contents of a pack file to what is already on the phone. Importing the same pack twice does nothing.
+// Adds the contents of a pack file to what is already on the phone. Rows that are already there (same date or same words) are updated, not duplicated.
 export async function importPack(pack) {
   if (!pack || typeof pack !== 'object') throw new Error('Not a pack file');
   const done = (await getSetting('importedPacks', [])) || [];
   if (pack.packId && done.includes(pack.packId)) return { skipped: true };
   let n = 0;
+  if (pack.replaceInsights) await db.insights.clear();
+  const keyOf = { entries: (r) => r.created, reflections: (r) => r.created, aces: (r) => r.text, toolbox: (r) => r.text, allowed: (r) => r.text };
   for (const t of ['aces', 'checks', 'toolbox', 'entries', 'allowed', 'reflections', 'insights']) {
     const rows = (pack[t] || []).map(({ id, ...r }) => r);
-    if (rows.length) { await db[t].bulkAdd(rows); n += rows.length; }
+    if (!rows.length) continue;
+    if (keyOf[t]) {
+      const existing = await db[t].toArray();
+      for (const r of rows) {
+        const hit = existing.find((e) => keyOf[t](e) === keyOf[t](r));
+        if (hit) await db[t].update(hit.id, r); else await db[t].add(r);
+        n++;
+      }
+    } else { await db[t].bulkAdd(rows); n += rows.length; }
   }
   for (const a of pack.answers || []) { await db.answers.put(a); n++; }
   for (const s of pack.settings || []) { await db.settings.put(s); n++; }

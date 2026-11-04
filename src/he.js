@@ -1,5 +1,17 @@
 // English -> Hebrew for every interface string. Draft; needs a native review. Hebrew addresses people in plural to stay gender-neutral.
 const HE = {
+"What you said": "מה אמרתם",
+"Themes": "נושאים",
+"Try next": "לנסות הלאה",
+"This is my read, written from your words. Tell me if it is wrong.": "זו הקריאה שלי, שנכתבה ממילים שלכם. תגידו לי אם היא לא נכונה.",
+"No reflection for this one yet.": "עוד אין השתקפות להקלטה הזו.",
+"No themes marked here.": "לא סומנו כאן נושאים.",
+"Nothing to try for this one. Sometimes saying it is the whole job.": "אין מה לנסות בזה. לפעמים לומר את זה זה כל העבודה.",
+"After a few recordings, themes show up here with the words that point to them.": "אחרי כמה הקלטות יופיעו כאן נושאים, עם המילים שמצביעות עליהם.",
+"Each dot is one recording. A filled dot means the theme was in it. These are my reading of your words, not a diagnosis.": "כל עיגול הוא הקלטה אחת. עיגול מלא אומר שהנושא היה בה. זו הקריאה שלי במילים שלכם, לא אבחנה.",
+"in {a} of {b} recordings": "ב-{a} מתוך {b} הקלטות",
+"What tends to help": "מה נוטה לעזור",
+"From you, on a steadier day": "ממך, ביום יציב יותר",
 "What should I call you?": "איך לקרוא לכם?",
 "My name": "השם שלי",
 "Import a pack": "ייבוא קובץ",

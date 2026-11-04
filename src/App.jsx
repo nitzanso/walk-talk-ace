@@ -13,6 +13,7 @@ import Breathe from './Breathe.jsx';
 import AceFlow from './AceFlow.jsx';
 import Reflection from './Reflection.jsx';
 import Support from './Support.jsx';
+import EntryDetail from './EntryDetail.jsx';
 import { I18n, useI18n } from './i18n.jsx';
 
 const TABS = [['today', 'Today', 'sun'], ['archive', 'Archive', 'path'], null, ['library', 'Library', 'book'], ['more', 'More', 'user']];
@@ -54,6 +55,7 @@ function Shell() {
               {ov.name === 'ace' && <AceFlow onClose={close} />}
               {ov.name === 'aces' && <AcesList onClose={close} open={open} />}
               {ov.name === 'reflect' && <Reflection text={ov.text} onClose={close} />}
+              {ov.name === 'entry' && <EntryDetail id={ov.id} onClose={close} open={open} />}
               {ov.name === 'support' && <Support urgent={ov.urgent} onClose={close} />}
             </Overlay>
           )}
