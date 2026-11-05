@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { db, getSetting } from './db.js';
 import { Icon } from './ui.jsx';
+import { buildMemory } from './memory.js';
 import ReflectionView from './ReflectionView.jsx';
 import { useI18n } from './i18n.jsx';
 
@@ -17,9 +18,10 @@ export default function Reflection({ text, onClose }) {
     (async () => {
       const url = (await getSetting('reflectUrl', '')) || '/api/reflect';
       const tone = await getSetting('tone', 'direct');
+      const memory = await buildMemory();
       let result = null; let kind = 'sample';
       try {
-        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, tone, lang }) });
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, tone, lang, memory }) });
         if (!res.ok) throw new Error('bad response');
         const j = await res.json();
         if (j.crisis) { onClose(); window.dispatchEvent(new Event('crisis')); return; }

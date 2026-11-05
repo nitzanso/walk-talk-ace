@@ -170,3 +170,5 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px soli
 .qgo{font-style:normal;text-decoration:underline;opacity:.75}
 mark.qmark{background:#F9DE8E;color:inherit;border-radius:4px;padding:1px 2px}
 .qlink.tap{text-decoration:underline;text-decoration-color:rgba(37,38,74,.3);text-underline-offset:3px}
+.rgrow{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:18px;border:1px solid rgba(37,38,74,.14)}
+.sit{margin-top:6px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.55);display:flex;flex-direction:column;gap:4px}

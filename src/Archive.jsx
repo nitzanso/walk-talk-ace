@@ -52,6 +52,12 @@ function Me({ open }) {
   const sets = useQuery(() => db.settings.toArray(), [], []);
   const aces = useQuery(() => db.aces.count(), [], 0);
   const ents = useQuery(() => db.entries.toArray(), [], []);
+  const E = ents.filter((x) => x.reflection).sort((a, b) => a.created - b.created);
+  const growthRows = E.filter((x) => x.reflection.growth);
+  const half = Math.ceil(E.length / 2);
+  const names = (arr) => new Set(arr.flatMap((x) => (x.reflection.feelings || []).map((f) => f.name)));
+  const early = names(E.slice(0, half)); const late = names(E.slice(half));
+  const newer = [...late].filter((n) => !early.has(n)).slice(0, 5); const quieter = [...early].filter((n) => !late.has(n)).slice(0, 5);
   const R = [...refl.filter((x) => !x.sample).map((x) => x.reflection), ...ents.map((x) => x.reflection)].filter(Boolean);
   const tally = (list, key) => { const m = {}; list.forEach((r) => (r[key] || []).forEach((x) => { const k = x.id || x.name; (m[k] = m[k] || []).push(x); })); return Object.entries(m).sort((p, q) => q[1].length - p[1].length); };
   const strengthsR = tally(R, 'strengths').filter(([id]) => STRENGTHS[id]);
@@ -69,7 +75,8 @@ function Me({ open }) {
   const nTraps = trapsR.length + themes.length;
   const nFeel = feelR.length;
   const nHelps = steady.length + helped.length + words.length + aces;
-  const empty = nStrength + nTraps + nFeel + nHelps + wonder.length === 0;
+  const nMoving = growthRows.length;
+  const empty = nMoving + nStrength + nTraps + nFeel + nHelps + wonder.length === 0;
   const PASS = { gone: t('gone'), smaller: t('smaller'), same: t('the same'), bigger: t('bigger') };
 
   if (empty) return <p className="lead">{t('As you talk, I will gently note what I see. Nothing here yet.')}</p>;
@@ -87,22 +94,42 @@ function Me({ open }) {
   const Item = ({ r }) => (
     <div className="mitem"><p dir="auto">{txt(r)}</p>{r.quote && <Quote q={r.quote} onQuote={goQuote} />}<button className="link small" onClick={() => db.insights.delete(r.id)}>{t('Not me')}</button></div>
   );
+  const Sit = ({ q }) => <div className="sit"><span className="small">{t('A question to sit with')}</span><p dir="auto">{q}</p></div>;
   const Page = ({ title, intro, children }) => <motion.div className="mpage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Back /><h2>{title}</h2>{intro && <p className="small">{intro}</p>}{children}</motion.div>;
   const MeRow = ({ title, count, onClick, sub }) => <button className="lrow big" onClick={onClick}><span>{title}{sub && <span className="small" style={{ display: 'block', fontFamily: 'var(--body)' }}>{sub}</span>}</span><span className="small">{count}</span></button>;
 
+  if (view === 'moving') return (
+    <Page title={t('How you are moving')} intro={t('How each day connects to the ones before it. These are guesses, and you know yourself best.')}>
+      {(newer.length > 0 || quieter.length > 0) && (
+        <div className="mitem">
+          {newer.length > 0 && <p><b style={{ fontWeight: 500 }}>{t('New lately')}:</b> {newer.join(', ')}</p>}
+          {quieter.length > 0 && <p><b style={{ fontWeight: 500 }}>{t('Quieter lately')}:</b> {quieter.join(', ')}</p>}
+        </div>
+      )}
+      {[...growthRows].reverse().map((x) => (
+        <button className="mitem tapitem" key={x.id} onClick={() => open('entry', { id: x.id })} style={{ textAlign: 'start', background: 'none', border: 0, borderBottom: '1px solid rgba(37,38,74,.1)' }}>
+          <span className="small">{new Date(x.created).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+          <span dir="auto">{x.reflection.growth}</span>
+        </button>
+      ))}
+      <Sit q={t('Looking at these days in a row, what would you say has changed in you since the first one?')} />
+    </Page>);
   if (view === 'strengths') return (
     <Page title={t('What you are good at')} intro={t('Strengths are things that feel like you and give you energy. This is a way of seeing yourself, not a test.')}>
       {strengthsR.map(([id, hits]) => (<div className="mitem" key={id}><b style={{ fontWeight: 500 }}>{nm(STRENGTHS[id], he)} <span className="small">· {hits.length}×</span></b><p>{nm(STRENGTHS[id].what, he)}</p><Quote q={hits[hits.length - 1].quote} onQuote={goQuote} /><p className="small">{t('The other side:')} {nm(STRENGTHS[id].shadow, he)}</p></div>))}
       {strengthI.map((r) => <Item key={r.id} r={r} />)}
+      <Sit q={t('Think of one place where this strength protected you, and one where it cost you something.')} />
     </Page>);
   if (view === 'traps') return (
     <Page title={t('What tends to come up')} intro={t('Habits of thinking and recurring themes, so you can meet them gently. Not flaws.')}>
       {trapsR.map(([id, hits]) => (<div className="mitem" key={id}><b style={{ fontWeight: 500 }}>{nm(TRAPS[id], he)} <span className="small">· {hits.length}×</span></b><p>{nm(TRAPS[id].what, he)}</p><Quote q={hits[hits.length - 1].quote} onQuote={goQuote} /></div>))}
       {themes.map((th) => <div className="mitem" key={th.id}><b style={{ fontWeight: 500 }}>{he && th.he ? th.he : th.en}</b>{(th.desc || th.descHe) && <p className="small" dir="auto">{he && th.descHe ? th.descHe : th.desc}</p>}<button className="link small" onClick={() => db.insights.delete(th.id)}>{t('Not me')}</button></div>)}
+      <Sit q={t('Whose voice does this sound like, and when did you first hear it?')} />
     </Page>);
   if (view === 'feelings') return (
     <Page title={t('Feelings')} intro={t('The feelings you named, and what happened to them. Feelings move.')}>
       {feelR.map(([name, hits]) => (<div className="mitem" key={name}><b style={{ fontWeight: 500 }}>{name} <span className="small">· {hits.length}×</span></b><Quote q={hits[hits.length - 1].quote} onQuote={goQuote} />{passed[name] && <p className="small">{t('Later you said it was')}: {passed[name].map((v) => PASS[v] || v).join(', ')}</p>}</div>))}
+      <Sit q={t('Which of these feelings have you not yet let speak in full?')} />
     </Page>);
   if (view === 'helps') return (
     <Page title={t('What helps you')}>
@@ -116,6 +143,7 @@ function Me({ open }) {
   return (
     <motion.div className="mpage" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
       <h2>{t('What I notice')}</h2>
+      {nMoving > 0 && <MeRow title={t('How you are moving')} count={nMoving} onClick={() => setView('moving')} />}
       {nStrength > 0 && <MeRow title={t('What you are good at')} count={nStrength} onClick={() => setView('strengths')} />}
       {nTraps > 0 && <MeRow title={t('What tends to come up')} count={nTraps} onClick={() => setView('traps')} />}
       {nFeel > 0 && <MeRow title={t('Feelings')} count={nFeel} onClick={() => setView('feelings')} />}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { buildMemory } from './memory.js';
 import { exportAll, wipeAll, importPack, useSetting } from './db.js';
 import { reportText } from './report.js';
 import { Seg, Icon } from './ui.jsx';
@@ -16,6 +17,8 @@ export default function More({ open }) {
   const [msg, setMsg] = useState('');
   const [imp, setImp] = useState('');
   const [rep, setRep] = useState('');
+  const [useMem, setUseMem] = useSetting('useMemory', true);
+  const [memTxt, setMemTxt] = useState(null);
 
   const download = async () => {
     const blob = new Blob([JSON.stringify(await exportAll(), null, 2)], { type: 'application/json' });
@@ -40,6 +43,13 @@ export default function More({ open }) {
       <section className="grp">
         <button className="lrow" onClick={() => open('support')}><span>{t('Support: people to call')}</span><Icon n="chev" size={18} /></button>
         <button className="lrow" onClick={() => open('library')}><span>{t('Library: ideas and tools')}</span><Icon n="chev" size={18} /></button>
+      </section>
+
+      <section className="grp">
+        <div className="fld"><span className="small">{t('Let reflections use my earlier recordings, so they can speak about how I am changing')}</span><Seg value={useMem === false ? 'off' : 'on'} onChange={(v) => setUseMem(v === 'on')} items={[['on', t('On')], ['off', t('Off')]]} /></div>
+        <button className="link" style={{ alignSelf: 'flex-start' }} onClick={async () => setMemTxt(memTxt === null ? ((await buildMemory()) || t('Nothing yet.')) : null)}>{memTxt === null ? t('See exactly what is sent') : t('Hide')}</button>
+        {memTxt !== null && <p className="small" dir="auto" style={{ whiteSpace: 'pre-wrap' }}>{memTxt}</p>}
+        <span className="small">{t('Only a short summary is sent, only when you ask for a reflection, and never saved by the service.')}</span>
       </section>
 
       <section className="grp">

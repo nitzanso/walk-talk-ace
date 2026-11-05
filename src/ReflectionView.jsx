@@ -48,6 +48,13 @@ export default function ReflectionView({ r, allowPocket, onQuote }) {
     <div className="refl">
       <div className="rprose">{prose.map((p, i) => <p key={i} className={i === 0 ? 'lead' : ''} dir="auto">{p}</p>)}</div>
 
+      {r.growth && (
+        <div className="rgrow">
+          <span className="small">{t('How this connects to your days')}</span>
+          <p dir="auto">{r.growth}</p>
+        </div>
+      )}
+
       {r.steadying && (
         <div className="rkeep">
           <span className="small">{t('A sentence of yours to keep')}</span>
