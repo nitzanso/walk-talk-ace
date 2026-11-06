@@ -51,6 +51,11 @@ export default function Today({ open }) {
     return null;
   })();
   const answerPass = (v) => db.settings.put({ key: 'passed:' + ask.x.id + '|' + ask.f.name, value: v });
+  const pend = (() => {
+    const ns = sets.filter((x) => x.key.startsWith('notice:') && x.value && !x.value.after && Date.now() - x.value.at > 20 * 60e3 && Date.now() - x.value.at < 6 * 3600e3).sort((a, b) => b.value.at - a.value.at);
+    return ns[0] || null;
+  })();
+  const answerNotice = (v) => db.settings.put({ key: pend.key, value: { ...pend.value, after: v } });
   const pocketCount = aceCount + words.length;
   const hour = new Date().getHours();
   const hi = hour < 12 ? t('Good morning') : hour < 18 ? t('Hello') : t('Good evening');
@@ -90,6 +95,12 @@ export default function Today({ open }) {
             )}
           </>
         )}
+        {pend && (
+          <div className="moodrow">
+            <span className="small">{t('A little while ago you noticed it was a {n} out of 10. How strong is it now?', { n: pend.value.intensity })}</span>
+            <div className="pills">{[['lower', t('lower')], ['same', t('the same')], ['higher', t('higher')]].map(([v, l]) => <button key={v} className="pill" style={{ fontSize: 14 }} onClick={() => answerNotice(v)}>{l}</button>)}</div>
+          </div>
+        )}
         {ask && (
           <div className="moodrow">
             <span className="small" dir="auto">{t('You named {f} earlier. How is it now?', { f: ask.f.name })}</span>
@@ -97,6 +108,7 @@ export default function Today({ open }) {
           </div>
         )}
         {pocketCount > 0 && <button className="link center small" onClick={() => open('aces')}>{t('You have something in your pocket')}</button>}
+        <button className="link center" onClick={() => open('notice')}>{t('I am flooded or spiraling')}</button>
         <button className="link center" onClick={() => open('picker')}>{t('Not ready to talk? Help me find one thing')}</button>
       </div>
     </div>

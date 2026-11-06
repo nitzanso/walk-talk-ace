@@ -13,6 +13,7 @@ import Type from './Type.jsx';
 import Breathe from './Breathe.jsx';
 import AceFlow from './AceFlow.jsx';
 import Reflection from './Reflection.jsx';
+import Notice from './Notice.jsx';
 import Support from './Support.jsx';
 import EntryDetail from './EntryDetail.jsx';
 import { I18n, useI18n } from './i18n.jsx';
@@ -53,6 +54,7 @@ function Shell() {
               {ov.name === 'type' && <Type onDone={close} onReflect={reflect} onCrisis={crisis} />}
               {ov.name === 'library' && <Library onClose={close} />}
               {ov.name === 'picker' && <Picker onClose={close} open={open} toolId={ov.toolId} />}
+              {ov.name === 'notice' && <Notice onClose={close} open={open} />}
               {ov.name === 'breathe' && <Breathe onClose={close} />}
               {ov.name === 'ace' && <AceFlow onClose={close} />}
               {ov.name === 'aces' && <AcesList onClose={close} open={open} />}

@@ -75,8 +75,12 @@ function Me({ open }) {
   const nTraps = trapsR.length + themes.length;
   const nFeel = feelR.length;
   const nHelps = steady.length + helped.length + words.length + aces;
+  const noticed = sets.filter((x) => x.key.startsWith('notice:') && x.value).map((x) => x.value).sort((a, b) => b.at - a.at);
+  const nNotice = noticed.length;
+  const lowered = noticed.filter((x) => x.after === 'lower').length;
+  const answered = noticed.filter((x) => x.after).length;
   const nMoving = growthRows.length;
-  const empty = nMoving + nStrength + nTraps + nFeel + nHelps + wonder.length === 0;
+  const empty = nNotice + nMoving + nStrength + nTraps + nFeel + nHelps + wonder.length === 0;
   const PASS = { gone: t('gone'), smaller: t('smaller'), same: t('the same'), bigger: t('bigger') };
 
   if (empty) return <p className="lead">{t('As you talk, I will gently note what I see. Nothing here yet.')}</p>;
@@ -98,6 +102,17 @@ function Me({ open }) {
   const Page = ({ title, intro, children }) => <motion.div className="mpage" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Back /><h2>{title}</h2>{intro && <p className="small">{intro}</p>}{children}</motion.div>;
   const MeRow = ({ title, count, onClick, sub }) => <button className="lrow big" onClick={onClick}><span>{title}{sub && <span className="small" style={{ display: 'block', fontFamily: 'var(--body)' }}>{sub}</span>}</span><span className="small">{count}</span></button>;
 
+  if (view === 'noticing') return (
+    <Page title={t('Noticing')} intro={t('Each time you see it, you are watching it and not only inside it.')}>
+      {answered > 0 && <div className="mitem"><p>{t('{a} of {b} times you checked again, it was lower.', { a: lowered, b: answered })}</p></div>}
+      {noticed.map((x) => (
+        <div className="mitem" key={x.at}>
+          <span className="small">{new Date(x.at).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+          <p>{x.feeling ? t(x.feeling) : ''} · {x.intensity}/10{x.after ? ' → ' + ({ lower: t('lower'), same: t('the same'), higher: t('higher') }[x.after]) : ''}</p>
+        </div>
+      ))}
+      <Sit q={t('What tends to come right before it starts?')} />
+    </Page>);
   if (view === 'moving') return (
     <Page title={t('How you are moving')} intro={t('How each day connects to the ones before it. These are guesses, and you know yourself best.')}>
       {(newer.length > 0 || quieter.length > 0) && (
@@ -143,6 +158,7 @@ function Me({ open }) {
   return (
     <motion.div className="mpage" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
       <h2>{t('What I notice')}</h2>
+      {nNotice > 0 && <MeRow title={t('Noticing')} count={nNotice} onClick={() => setView('noticing')} />}
       {nMoving > 0 && <MeRow title={t('How you are moving')} count={nMoving} onClick={() => setView('moving')} />}
       {nStrength > 0 && <MeRow title={t('What you are good at')} count={nStrength} onClick={() => setView('strengths')} />}
       {nTraps > 0 && <MeRow title={t('What tends to come up')} count={nTraps} onClick={() => setView('traps')} />}
