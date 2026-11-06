@@ -29,7 +29,7 @@ export function QuestionCard({ q, onDone }) {
 }
 
 export default function Today({ open }) {
-  const { t, C, lang } = useI18n();
+  const { t, C, lang, he } = useI18n();
   const { MESSAGES } = C;
   const [tone] = useSetting('tone', 'direct');
   const [name] = useSetting('name', '');
@@ -40,6 +40,8 @@ export default function Today({ open }) {
   const sets = useQuery(() => db.settings.toArray(), [], []);
   const refl = useQuery(() => db.reflections.toArray(), [], []);
 
+  const lastWeekly = Math.max(0, ...sets.filter((x) => x.key.startsWith('week:') && x.value).map((x) => x.value.at));
+  const weeklyDue = checks.length >= 2 && Date.now() - lastWeekly > 7 * 86400e3;
   const today = checks.find((c) => c.created >= startOfDay());
   const pick = async (m) => { await db.checks.add({ created: Date.now(), mood: m }); if (navigator.vibrate) navigator.vibrate(15); };
   const fbs = {}; sets.filter((s) => s.key.startsWith('fb:tool:')).forEach((s) => { fbs[s.key.slice(8)] = s.value; });
@@ -109,6 +111,7 @@ export default function Today({ open }) {
             <div className="pills">{[['gone', t('gone')], ['smaller', t('smaller')], ['same', t('the same')], ['bigger', t('bigger')]].map(([v, l]) => <button key={v} className="pill" style={{ fontSize: 14 }} onClick={() => answerPass(v)}>{l}</button>)}</div>
           </div>
         )}
+        {weeklyDue && <div className="hl"><span className="small">{he ? 'הגיע הזמן לצ׳ק-אין שבועי' : 'Time for a weekly check-in'}</span><b className="lead" style={{ fontWeight: 400 }}>{he ? 'כמה דקות: איך את/ה, ולאן את/ה הולכ/ת.' : 'A few minutes: how you are, and where you are heading.'}</b><button className="btn" onClick={() => open('weekly')}>{he ? 'להתחיל' : 'Start'}</button></div>}
         {!seenIntro && <button className="link center small" onClick={() => open('explainer', { id: 'intro' })}>{t('Meet Chris, your walking buddy (3 min)')}</button>}
         {pocketCount > 0 && <button className="link center small" onClick={() => open('aces')}>{t('You have something in your pocket')}</button>}
         <button className="link center" onClick={() => open('picker')}>{t('Not ready to talk? Help me find one thing')}</button>

@@ -12,6 +12,7 @@ import Talk from './Talk.jsx';
 import Type from './Type.jsx';
 import Breathe from './Breathe.jsx';
 import AceFlow from './AceFlow.jsx';
+import Weekly from './Weekly.jsx';
 import Reflection from './Reflection.jsx';
 import Explainer from './Explainer.jsx';
 import Notice from './Notice.jsx';
@@ -59,6 +60,7 @@ function Shell() {
               {ov.name === 'notice' && <Notice onClose={close} open={open} />}
               {ov.name === 'breathe' && <Breathe onClose={close} />}
               {ov.name === 'ace' && <AceFlow onClose={close} />}
+              {ov.name === 'weekly' && <Weekly onClose={close} />}
               {ov.name === 'aces' && <AcesList onClose={close} open={open} />}
               {ov.name === 'reflect' && <Reflection text={ov.text} onClose={close} />}
               {ov.name === 'entry' && <EntryDetail id={ov.id} quote={ov.quote} onClose={close} open={open} />}

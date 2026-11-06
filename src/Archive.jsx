@@ -158,6 +158,7 @@ function Me({ open }) {
   return (
     <motion.div className="mpage" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
       <h2>{t('What I notice')}</h2>
+      <MeRow title={he ? 'צ׳ק-אין שבועי' : 'Weekly check-in'} count="" onClick={() => open('weekly')} />
       {nNotice > 0 && <MeRow title={t('Noticing')} count={nNotice} onClick={() => setView('noticing')} />}
       {nMoving > 0 && <MeRow title={t('How you are moving')} count={nMoving} onClick={() => setView('moving')} />}
       {nStrength > 0 && <MeRow title={t('What you are good at')} count={nStrength} onClick={() => setView('strengths')} />}

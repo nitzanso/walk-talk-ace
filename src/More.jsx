@@ -6,7 +6,7 @@ import { Seg, Icon } from './ui.jsx';
 import { useI18n } from './i18n.jsx';
 
 export default function More({ open }) {
-  const { t } = useI18n();
+  const { t, he } = useI18n();
   const [tone, setTone] = useSetting('tone', 'direct');
   const [name, setName] = useSetting('name', '');
   const [nameDraft, setNameDraft] = useState(null);
@@ -18,6 +18,7 @@ export default function More({ open }) {
   const [imp, setImp] = useState('');
   const [rep, setRep] = useState('');
   const [useMem, setUseMem] = useSetting('useMemory', true);
+  const [lookOpen, setLookOpen] = useSetting('lookback:open', false);
   const [memTxt, setMemTxt] = useState(null);
 
   const download = async () => {
@@ -47,6 +48,7 @@ export default function More({ open }) {
 
       <section className="grp">
         <div className="fld"><span className="small">{t('Let reflections use my earlier recordings, so they can speak about how I am changing')}</span><Seg value={useMem === false ? 'off' : 'on'} onChange={(v) => setUseMem(v === 'on')} items={[['on', t('On')], ['off', t('Off')]]} /></div>
+        <div className="fld"><span className="small">{he ? 'מבט לאחור (לראות גם מה טוב, לצד העצב) נפתח בדרך כלל אחרי שלושה שבועות. אפשר לפתוח אותו מוקדם יותר.' : 'Looking back (seeing what else is true beside the sadness) usually opens after about three weeks. You can open it earlier.'}</span><Seg value={lookOpen ? 'on' : 'off'} onChange={(v) => setLookOpen(v === 'on')} items={[['off', he ? 'ברירת מחדל' : 'Default'], ['on', he ? 'לפתוח עכשיו' : 'Open now']]} /></div>
         <button className="link" style={{ alignSelf: 'flex-start' }} onClick={async () => setMemTxt(memTxt === null ? ((await buildMemory()) || t('Nothing yet.')) : null)}>{memTxt === null ? t('See exactly what is sent') : t('Hide')}</button>
         {memTxt !== null && <p className="small" dir="auto" style={{ whiteSpace: 'pre-wrap' }}>{memTxt}</p>}
         <span className="small">{t('Only a short summary is sent, only when you ask for a reflection, and never saved by the service.')}</span>
