@@ -72,6 +72,7 @@ export default function Today({ open }) {
         <button className="bigmic" onClick={() => open('talk')} aria-label={t('Talk')}><Icon n="mic" size={64} color="#fff" /></button>
         <p className="lead center">{t("Say what's on your mind.")}</p>
         <p className="small center">{t('A minute is plenty. It does not have to be organized.')}</p>
+        <button className="pill" style={{ flex: 'none', padding: '0 18px', fontSize: 15 }} onClick={() => open('notice')}>{t('I am flooded or spiraling')}</button>
       </div>
 
       <div className="below">
@@ -108,7 +109,6 @@ export default function Today({ open }) {
           </div>
         )}
         {pocketCount > 0 && <button className="link center small" onClick={() => open('aces')}>{t('You have something in your pocket')}</button>}
-        <button className="link center" onClick={() => open('notice')}>{t('I am flooded or spiraling')}</button>
         <button className="link center" onClick={() => open('picker')}>{t('Not ready to talk? Help me find one thing')}</button>
       </div>
     </div>
