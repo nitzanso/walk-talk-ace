@@ -462,5 +462,7 @@ const HE = {
   "Watch a 2-minute explanation": "הסבר של שתי דקות",
   "Watch": "לצפות",
   "min": "דק׳",
+"A short film": "סרטון קצר",
+"Meet Chris, your walking buddy (3 min)": "להכיר את כריס, החברה שלכם להליכות (3 דק׳)",
 };
 export default HE;

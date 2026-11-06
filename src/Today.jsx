@@ -33,6 +33,7 @@ export default function Today({ open }) {
   const { MESSAGES } = C;
   const [tone] = useSetting('tone', 'direct');
   const [name] = useSetting('name', '');
+  const [seenIntro] = useSetting('seen:explainer:intro', null);
   const checks = useQuery(() => db.checks.orderBy('created').reverse().limit(30).toArray(), []);
   const aceCount = useQuery(() => db.aces.count(), [], 0);
   const words = useQuery(() => db.insights.where('kind').equals('myword').toArray(), [], []);
@@ -108,6 +109,7 @@ export default function Today({ open }) {
             <div className="pills">{[['gone', t('gone')], ['smaller', t('smaller')], ['same', t('the same')], ['bigger', t('bigger')]].map(([v, l]) => <button key={v} className="pill" style={{ fontSize: 14 }} onClick={() => answerPass(v)}>{l}</button>)}</div>
           </div>
         )}
+        {!seenIntro && <button className="link center small" onClick={() => open('explainer', { id: 'intro' })}>{t('Meet Chris, your walking buddy (3 min)')}</button>}
         {pocketCount > 0 && <button className="link center small" onClick={() => open('aces')}>{t('You have something in your pocket')}</button>}
         <button className="link center" onClick={() => open('picker')}>{t('Not ready to talk? Help me find one thing')}</button>
       </div>

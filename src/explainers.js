@@ -1,6 +1,7 @@
 // The pool of short explainers. Each one is a few scenes: a drawing, a spoken line, and a caption.
 // `tags` say when it fits: situations and states. `source` is shown at the end so the person can check it.
 export const EXPLAINERS = [
+  { id: 'intro', film: true, tags: ['start'], minutes: 3, en: { title: "Hi, I'm Chris", source: '' }, he: { title: 'היי, אני כריס', source: '' }, scenes: [] },
   {
     id: 'spiral', tags: ['spiraling', 'flooded', 'anxious', 'overthinking'], minutes: 2,
     en: { title: 'Spiraling, and zooming out', source: 'Lieberman et al., 2007, "Putting feelings into words" (Psychological Science). A simplified picture, not a medical explanation.' },

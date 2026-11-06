@@ -4,6 +4,7 @@ import { db } from './db.js';
 import { Icon } from './ui.jsx';
 import { useI18n } from './i18n.jsx';
 import { EXPLAINERS } from './explainers.js';
+import Film from './Film.jsx';
 
 const INK = '#25264A', SKIN = '#F2C9A5', BLUE = '#7FA6D6', RED = '#E58C7B', YEL = '#F2B24A', GRN = '#8CC7A1';
 
@@ -67,7 +68,12 @@ function Art({ name, t }) {
 }
 
 // A short explainer. It can be skipped at any time. Voice uses the phone's own voice, so it works offline and costs nothing.
-export default function Explainer({ id, onClose, open }) {
+export default function Explainer(props) {
+  const ex0 = EXPLAINERS.find((x) => x.id === props.id);
+  return ex0 && ex0.film ? <Film {...props} /> : <Slides {...props} />;
+}
+
+function Slides({ id, onClose, open }) {
   const { t, he, lang } = useI18n();
   const ex = EXPLAINERS.find((x) => x.id === id) || EXPLAINERS[0];
   const L = he ? 'he' : 'en';
