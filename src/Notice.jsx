@@ -26,6 +26,7 @@ export default function Notice({ onClose, open }) {
           <h1 className="center">{t('You noticed.')}</h1>
           <p className="lead center">{t('That already counts. Seeing it means you are not only inside it.')}</p>
           <button className="btn" onClick={() => setStep(1)}>{t('Continue')}</button>
+          <button className="link" onClick={() => open('explainer', { id: 'spiral' })}>{t('Watch a 2-minute explanation')}</button>
         </div>
       )}
       {step === 1 && (

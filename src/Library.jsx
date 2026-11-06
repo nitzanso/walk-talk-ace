@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { db, useQuery } from './db.js';
 import { useI18n } from './i18n.jsx';
 import { Seg, Helpful, Icon } from './ui.jsx';
+import { EXPLAINERS } from './explainers.js';
 
 function Item({ title, children, kind, id }) {
   const [o, setO] = useState(false);
@@ -64,14 +65,15 @@ function Mine() {
   );
 }
 
-export default function Library({ onClose }) {
-  const { t, C } = useI18n();
+export default function Library({ onClose, open }) {
+  const { t, C, he } = useI18n();
   const { LIGHTS, TOOLS } = C;
-  const [seg, setSeg] = useState('lights');
+  const [seg, setSeg] = useState('watch');
   return (
     <div className="screen">
       <div className="top"><h1>{t('Library')}</h1>{onClose && <button className="iconbtn" onClick={onClose} aria-label={t('Close')}><Icon n="close" size={20} /></button>}</div>
-      <Seg value={seg} onChange={setSeg} items={[['lights', t('Little lights')], ['tools', t('Try this')], ['mine', t('Mine')]]} />
+      <Seg value={seg} onChange={setSeg} items={[['watch', t('Watch')], ['lights', t('Little lights')], ['tools', t('Try this')], ['mine', t('Mine')]]} />
+      {seg === 'watch' && EXPLAINERS.map((x) => <button key={x.id} className="lrow big" onClick={() => open && open('explainer', { id: x.id })}><span>{x[he ? 'he' : 'en'].title}<span className="small" style={{ display: 'block', fontFamily: 'var(--body)' }}>{x.minutes} {t('min')}</span></span><Icon n="chev" size={18} /></button>)}
       {seg === 'lights' && LIGHTS.map((l) => (
         <Item key={l.id} title={l.title} kind="light" id={l.id}>
           <p><b>{t('What research found.')}</b> {l.finding}</p><p><b>{t('For you.')}</b> {l.forYou}</p><p><b>{t('Try it.')}</b> {l.tryIt}</p><p className="small">{l.caveat}</p>

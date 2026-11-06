@@ -13,6 +13,7 @@ import Type from './Type.jsx';
 import Breathe from './Breathe.jsx';
 import AceFlow from './AceFlow.jsx';
 import Reflection from './Reflection.jsx';
+import Explainer from './Explainer.jsx';
 import Notice from './Notice.jsx';
 import Support from './Support.jsx';
 import EntryDetail from './EntryDetail.jsx';
@@ -52,8 +53,9 @@ function Shell() {
             <Overlay key={ov.name}>
               {ov.name === 'talk' && <Talk onDone={close} onReflect={reflect} onCrisis={crisis} />}
               {ov.name === 'type' && <Type onDone={close} onReflect={reflect} onCrisis={crisis} />}
-              {ov.name === 'library' && <Library onClose={close} />}
+              {ov.name === 'library' && <Library onClose={close} open={open} />}
               {ov.name === 'picker' && <Picker onClose={close} open={open} toolId={ov.toolId} />}
+              {ov.name === 'explainer' && <Explainer id={ov.id} onClose={close} open={open} />}
               {ov.name === 'notice' && <Notice onClose={close} open={open} />}
               {ov.name === 'breathe' && <Breathe onClose={close} />}
               {ov.name === 'ace' && <AceFlow onClose={close} />}
